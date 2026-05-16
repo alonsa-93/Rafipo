@@ -672,6 +672,82 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
   box-shadow: var(--shadow-soft);
 }
 
+/* ---------- DRAW MODE ---------- */
+.draw-target {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 900;
+  font-size: clamp(50px, 8vw, 72px);
+  background: var(--white-warm);
+  padding: 10px 22px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  border: 4px solid var(--pink-soft);
+  margin-bottom: 12px;
+  min-height: 88px;
+  line-height: 1;
+}
+.draw-target .label {
+  font-size: clamp(16px, 2.4vw, 20px);
+  color: var(--ink-soft);
+  font-family: 'Varela Round', sans-serif;
+  font-weight: 700;
+}
+.draw-target .char {
+  background: linear-gradient(135deg, var(--pink-hot) 0%, var(--purple) 50%, var(--peach) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.draw-board {
+  background: #FFFFFF;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  border: 6px solid var(--lavender);
+  position: relative;
+  margin-bottom: 16px;
+  touch-action: none;
+  overflow: hidden;
+}
+#draw-canvas {
+  display: block;
+  background: #FFFFFF;
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.draw-actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.draw-btn {
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 18px;
+  padding: 14px 24px;
+  border: none;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  min-height: 56px;
+  min-width: 130px;
+  box-shadow: var(--shadow-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--white-warm);
+  transition: transform 0.15s ease;
+}
+.draw-btn:active { transform: scale(0.95); }
+.draw-btn.clear  { background: linear-gradient(180deg, #FFE4E1 0%, #FFB3B3 100%); color: var(--ink); }
+.draw-btn.done   { background: linear-gradient(180deg, #9CECD8 0%, #5FD4B8 100%); }
+
 /* ---------- ACHIEVEMENTS SCREEN ---------- */
 .ach-scroll {
   width: 100%;
@@ -821,6 +897,10 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
       <div class="icon">🔊</div>
       <div class="label">מה הצליל הזה?</div>
     </div>
+    <div class="menu-card" onclick="startGame('letters','draw',1)">
+      <div class="icon">✏️</div>
+      <div class="label">ציירי את האות</div>
+    </div>
   </div>
   <div class="screen-title" style="font-size:22px; margin-bottom:14px;">בחרי רמה:</div>
   <div class="level-row" id="letters-levels">
@@ -856,6 +936,10 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
     <div class="menu-card" onclick="startGame('math','add',1)">
       <div class="icon">🧮</div>
       <div class="label">חיבור עד 20</div>
+    </div>
+    <div class="menu-card" onclick="startGame('numbers','draw',1)">
+      <div class="icon">✏️</div>
+      <div class="label">ציירי את המספר</div>
     </div>
   </div>
   <div class="screen-title" style="font-size:22px; margin-bottom:14px;">בחרי רמה:</div>
@@ -1200,7 +1284,7 @@ function cycleTheme() {
    ============================================================ */
 const game = {
   type: null,         // 'letters' | 'numbers' | 'math'
-  mode: null,         // 'identify' | 'find' | 'match' | 'count' | 'add'
+  mode: null,         // 'identify' | 'find' | 'match' | 'count' | 'add' | 'draw'
   level: 1,
   pool: [],           // available items (n/a for math)
   current: null,      // current item / problem
@@ -1210,7 +1294,8 @@ const game = {
   locked: false,      // input lock during feedback
   perfectStreak: 0,   // first-try-correct in a row at current level
   currentIsPerfect: true, // false once user makes a wrong attempt on current Q
-  lastItemId: null,   // avoid consecutive repeats
+  lastItemId: null,   // last item id (for legacy use)
+  sessionSeen: new Set(), // strict: no item repeats in same session until pool exhausted
 };
 
 function rebuildPool() {
@@ -1235,6 +1320,7 @@ function startGame(type, mode, _legacyLevel) {
   game.roundProgress = 0;
   game.perfectStreak = 0;
   game.lastItemId = null;
+  game.sessionSeen = new Set();
 
   rebuildPool();
 
@@ -1287,18 +1373,25 @@ function nextQuestion() {
     do {
       problem = generateMathProblem(game.level);
       guard++;
-    } while (game.lastItemId === problem.id && guard < 20);
+    } while (game.sessionSeen.has(problem.id) && guard < 40);
+    if (guard >= 40) game.sessionSeen.clear();
+    game.sessionSeen.add(problem.id);
     game.current = problem;
     game.lastItemId = problem.id;
     game.choices = generateMathChoices(problem.result, game.level);
   } else {
-    let cand, guard = 0;
-    do {
-      cand = game.pool[Math.floor(Math.random() * game.pool.length)];
-      guard++;
-    } while (game.lastItemId === getItemId(cand) && game.pool.length > 1 && guard < 20);
+    // Strict no-repeat in session — until full pool exhausted, then reset
+    let available = game.pool.filter(p => !game.sessionSeen.has(getItemId(p)));
+    if (available.length === 0) {
+      game.sessionSeen.clear();
+      // After reset, still avoid the very last item to prevent immediate repeat
+      available = game.pool.filter(p => getItemId(p) !== game.lastItemId);
+      if (available.length === 0) available = game.pool.slice();
+    }
+    const cand = available[Math.floor(Math.random() * available.length)];
     game.current = cand;
     game.lastItemId = getItemId(cand);
+    game.sessionSeen.add(getItemId(cand));
     const distractorCount = game.mode === 'identify' || game.mode === 'match' ? 2 : 3;
     const distractors = pickN(game.pool, distractorCount, game.current);
     game.choices = shuffle([game.current, ...distractors]);
@@ -1330,6 +1423,11 @@ function getNameToSpeak(item) {
 function renderQuestion() {
   const body = document.getElementById('game-body');
   body.innerHTML = '';
+
+  if (game.mode === 'draw') {
+    renderDrawMode();
+    return;
+  }
 
   if (game.type === 'letters') {
     if (game.mode === 'identify') {
@@ -1537,6 +1635,283 @@ function renderQuestion() {
       body.appendChild(row);
     }
   }
+}
+
+/* ============================================================
+   DRAW MODE
+   ============================================================ */
+const draw = {
+  canvas: null,
+  ctx: null,
+  size: 320,
+  dots: [],           // [{x,y,hit}]
+  userPoints: [],     // [{x,y}] all drawn points across strokes
+  drawing: false,
+  lastX: 0, lastY: 0,
+};
+
+function generateGuideDots(char, size) {
+  const off = document.createElement('canvas');
+  off.width = size; off.height = size;
+  const ctx = off.getContext('2d');
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, size, size);
+  const fontSize = Math.floor(size * 0.75);
+  ctx.font = `900 ${fontSize}px Rubik, 'Varela Round', sans-serif`;
+  ctx.textBaseline = 'middle';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#000000';
+  ctx.fillText(char, size / 2, size / 2);
+
+  const data = ctx.getImageData(0, 0, size, size).data;
+  const dots = [];
+  const GRID = Math.max(10, Math.floor(size / 22));
+  const HALF = GRID / 2;
+  for (let y = HALF; y < size; y += GRID) {
+    for (let x = HALF; x < size; x += GRID) {
+      // sample 3x3 around (x,y); if any pixel is text-dark, include
+      let dark = false;
+      for (let dy = -1; dy <= 1 && !dark; dy++) {
+        for (let dx = -1; dx <= 1 && !dark; dx++) {
+          const px = Math.floor(x) + dx, py = Math.floor(y) + dy;
+          if (px < 0 || py < 0 || px >= size || py >= size) continue;
+          const i = (py * size + px) * 4;
+          if (data[i] < 80) dark = true;
+        }
+      }
+      if (dark) dots.push({ x, y, hit: false });
+    }
+  }
+  return dots;
+}
+
+function drawGuideDots() {
+  const { ctx, size, dots } = draw;
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, size, size);
+  dots.forEach(d => {
+    ctx.beginPath();
+    ctx.arc(d.x, d.y, 2.2, 0, Math.PI * 2);
+    ctx.fillStyle = d.hit ? '#7BD389' : '#3A2E5C';
+    ctx.fill();
+  });
+}
+
+function clearDrawing() {
+  draw.userPoints = [];
+  draw.dots.forEach(d => d.hit = false);
+  drawGuideDots();
+}
+
+function getCanvasPoint(e) {
+  const rect = draw.canvas.getBoundingClientRect();
+  const scaleX = draw.canvas.width / rect.width;
+  const scaleY = draw.canvas.height / rect.height;
+  return {
+    x: (e.clientX - rect.left) * scaleX,
+    y: (e.clientY - rect.top) * scaleY,
+  };
+}
+
+function startStroke(e) {
+  e.preventDefault();
+  draw.drawing = true;
+  const p = getCanvasPoint(e);
+  draw.lastX = p.x; draw.lastY = p.y;
+  draw.userPoints.push({ x: p.x, y: p.y });
+  markHits(p.x, p.y);
+}
+
+function extendStroke(e) {
+  if (!draw.drawing) return;
+  e.preventDefault();
+  const p = getCanvasPoint(e);
+  const { ctx } = draw;
+  ctx.lineWidth = 16;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#FFC841';
+  ctx.beginPath();
+  ctx.moveTo(draw.lastX, draw.lastY);
+  ctx.lineTo(p.x, p.y);
+  ctx.stroke();
+
+  // interpolate points for hit-testing
+  const dx = p.x - draw.lastX, dy = p.y - draw.lastY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  const steps = Math.max(1, Math.ceil(dist / 4));
+  for (let i = 1; i <= steps; i++) {
+    const t = i / steps;
+    const ix = draw.lastX + dx * t;
+    const iy = draw.lastY + dy * t;
+    draw.userPoints.push({ x: ix, y: iy });
+    markHits(ix, iy);
+  }
+
+  draw.lastX = p.x; draw.lastY = p.y;
+}
+
+function endStroke(e) {
+  if (!draw.drawing) return;
+  e.preventDefault();
+  draw.drawing = false;
+}
+
+function markHits(x, y) {
+  const R = 18, R2 = R * R;
+  draw.dots.forEach(d => {
+    if (d.hit) return;
+    const dx = d.x - x, dy = d.y - y;
+    if (dx * dx + dy * dy <= R2) d.hit = true;
+  });
+}
+
+function evaluateDrawing() {
+  if (draw.dots.length === 0) return { ok: false, coverage: 0, accuracy: 0 };
+  const hitCount = draw.dots.filter(d => d.hit).length;
+  const coverage = hitCount / draw.dots.length;
+  let nearCount = 0;
+  const R = 22, R2 = R * R;
+  draw.userPoints.forEach(p => {
+    for (const d of draw.dots) {
+      const dx = d.x - p.x, dy = d.y - p.y;
+      if (dx * dx + dy * dy <= R2) { nearCount++; return; }
+    }
+  });
+  const accuracy = draw.userPoints.length ? nearCount / draw.userPoints.length : 0;
+  const ok = coverage >= 0.55 && accuracy >= 0.45 && draw.userPoints.length >= 30;
+  return { ok, coverage, accuracy };
+}
+
+function setupDrawCanvas(canvas, dots) {
+  draw.canvas = canvas;
+  draw.ctx = canvas.getContext('2d');
+  draw.dots = dots;
+  draw.userPoints = [];
+  drawGuideDots();
+  canvas.addEventListener('pointerdown', startStroke);
+  canvas.addEventListener('pointermove', extendStroke);
+  canvas.addEventListener('pointerup', endStroke);
+  canvas.addEventListener('pointercancel', endStroke);
+  canvas.addEventListener('pointerleave', endStroke);
+}
+
+function renderDrawMode() {
+  const body = document.getElementById('game-body');
+  body.innerHTML = '';
+  const char = getDisplayChar(game.current);
+  const label = game.type === 'letters' ? 'ציירי את האות:' : 'ציירי את המספר:';
+
+  const target = document.createElement('div');
+  target.className = 'draw-target';
+  target.innerHTML = `<span class="label">${label}</span><span class="char">${char}</span>`;
+  body.appendChild(target);
+
+  const board = document.createElement('div');
+  board.className = 'draw-board';
+  const SIZE = Math.min(320, Math.max(240, Math.min(window.innerWidth - 60, window.innerHeight - 360)));
+  draw.size = SIZE;
+  board.style.width = SIZE + 'px';
+  board.style.height = SIZE + 'px';
+
+  const canvas = document.createElement('canvas');
+  canvas.id = 'draw-canvas';
+  canvas.width = SIZE;
+  canvas.height = SIZE;
+  canvas.style.width = SIZE + 'px';
+  canvas.style.height = SIZE + 'px';
+  board.appendChild(canvas);
+  body.appendChild(board);
+
+  const dots = generateGuideDots(char, SIZE);
+  setupDrawCanvas(canvas, dots);
+
+  const actions = document.createElement('div');
+  actions.className = 'draw-actions';
+
+  const clearBtn = document.createElement('button');
+  clearBtn.className = 'draw-btn clear';
+  clearBtn.innerHTML = '🗑️ למחוק';
+  clearBtn.onclick = () => clearDrawing();
+
+  const doneBtn = document.createElement('button');
+  doneBtn.className = 'draw-btn done';
+  doneBtn.innerHTML = '✓ סיימתי';
+  doneBtn.onclick = () => handleDrawDone(doneBtn);
+
+  actions.appendChild(clearBtn);
+  actions.appendChild(doneBtn);
+  body.appendChild(actions);
+
+  setTimeout(() => {
+    const phrase = game.type === 'letters'
+      ? 'ציירי את האות ' + game.current.name
+      : 'ציירי את המספר ' + game.current.word;
+    speak(phrase);
+  }, 400);
+}
+
+function handleDrawDone(btn) {
+  if (game.locked) return;
+  const res = evaluateDrawing();
+  if (res.ok) {
+    onDrawCorrect();
+  } else {
+    onDrawWrong(res);
+  }
+}
+
+function onDrawCorrect() {
+  game.locked = true;
+  spawnConfetti();
+  renderRafi(document.getElementById('game-rafi-wrap'), 'cheering');
+
+  if (game.type === 'letters') {
+    state.lettersLearned[game.current.char] = (state.lettersLearned[game.current.char] || 0) + 1;
+    const key = 'letters_' + game.level;
+    state.mastery[key] = state.mastery[key] || [];
+    if (!state.mastery[key].includes(game.current.char)) state.mastery[key].push(game.current.char);
+  } else if (game.type === 'numbers') {
+    state.numbersLearned[game.current.value] = (state.numbersLearned[game.current.value] || 0) + 1;
+    const key = 'numbers_' + game.level;
+    state.mastery[key] = state.mastery[key] || [];
+    const id = String(game.current.value);
+    if (!state.mastery[key].includes(id)) state.mastery[key].push(id);
+  }
+
+  if (game.currentIsPerfect) {
+    game.perfectStreak = (game.perfectStreak || 0) + 1;
+  }
+  state.stars++;
+  updateStarsDisplay();
+  game.roundProgress++;
+  buildProgressDots();
+  saveState();
+
+  const praise = PRAISES[Math.floor(Math.random() * PRAISES.length)];
+  setTimeout(() => speak(praise), 200);
+
+  setTimeout(() => {
+    if (shouldPromote()) { promoteLevel(); return; }
+    if (game.roundProgress >= 5) grantSticker();
+    else nextQuestion();
+  }, 2000);
+}
+
+function onDrawWrong(res) {
+  game.currentIsPerfect = false;
+  game.perfectStreak = 0;
+  renderRafi(document.getElementById('game-rafi-wrap'), 'thinking');
+  let msg;
+  if (res.coverage < 0.25 && draw.userPoints.length < 30) {
+    msg = 'נסי לצייר על כל הנקודות הקטנות';
+  } else if (res.accuracy < 0.45) {
+    msg = 'כמעט! ננסי שוב, יותר לאט';
+  } else {
+    msg = 'כמעט! עוד קצת על הנקודות';
+  }
+  speak(msg);
+  clearDrawing();
 }
 
 /* ============================================================
