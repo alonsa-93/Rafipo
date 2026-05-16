@@ -684,6 +684,199 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
   box-shadow: var(--shadow-soft);
 }
 
+/* ---------- MEMORY GAME ---------- */
+.memory-grid {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+  perspective: 600px;
+}
+.memory-card {
+  aspect-ratio: 1;
+  width: 100%;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.5s;
+  transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
+}
+.memory-card.flipped, .memory-card.matched {
+  transform: rotateY(180deg);
+}
+.memory-face {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 900;
+  box-shadow: var(--shadow-soft);
+}
+.memory-face.back {
+  background: linear-gradient(135deg, var(--purple) 0%, var(--pink-hot) 100%);
+  color: var(--white-warm);
+  font-size: clamp(28px, 6vw, 40px);
+}
+.memory-face.front {
+  background: var(--white-warm);
+  color: var(--ink);
+  font-size: clamp(36px, 9vw, 56px);
+  transform: rotateY(180deg);
+  border: 4px solid var(--lavender);
+}
+.memory-card.matched .memory-face.front {
+  background: linear-gradient(135deg, #B0EBC0 0%, #7BD389 100%);
+  color: var(--white-warm);
+  border-color: var(--green-ok);
+  animation: matched-pulse 0.6s ease-out;
+}
+@keyframes matched-pulse {
+  0% { transform: rotateY(180deg) scale(1); }
+  50% { transform: rotateY(180deg) scale(1.12); }
+  100% { transform: rotateY(180deg) scale(1); }
+}
+
+/* ---------- SEQUENCE GAME ---------- */
+.seq-prompt {
+  font-size: clamp(18px, 2.8vw, 24px);
+  font-weight: 700;
+  color: var(--ink);
+  background: var(--white-warm);
+  padding: 12px 22px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  margin-bottom: 20px;
+  text-align: center;
+}
+.seq-slots {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 28px;
+  max-width: 100%;
+}
+.seq-slot {
+  width: clamp(56px, 12vw, 76px);
+  height: clamp(56px, 12vw, 76px);
+  border: 4px dashed var(--purple);
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 900;
+  font-size: clamp(28px, 6vw, 40px);
+  background: rgba(255,255,255,0.5);
+  color: var(--ink-soft);
+  transition: background 0.3s ease, border-style 0.3s ease, transform 0.3s ease;
+}
+.seq-slot.filled {
+  border-style: solid;
+  border-color: var(--green-ok);
+  background: linear-gradient(135deg, #FFE090, #FFC841);
+  color: var(--ink);
+  animation: filled-pop 0.4s ease-out;
+}
+@keyframes filled-pop {
+  0% { transform: scale(0.6); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+.seq-items {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+  max-width: 100%;
+}
+.seq-item {
+  width: clamp(56px, 12vw, 76px);
+  height: clamp(56px, 12vw, 76px);
+  background: var(--white-warm);
+  border: 4px solid var(--purple);
+  border-radius: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Rubik', sans-serif;
+  font-weight: 900;
+  font-size: clamp(28px, 6vw, 40px);
+  color: var(--ink);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.15s ease, opacity 0.3s ease;
+}
+.seq-item:active { transform: scale(0.94); }
+.seq-item.used { opacity: 0.25; pointer-events: none; }
+.seq-item.shake-wrong { animation: wrong-shake 0.5s ease-in-out; border-color: #FF7A7A; }
+
+/* ---------- COLORS / SHAPES ---------- */
+.swatch-row, .shape-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 14px;
+  max-width: 560px;
+}
+.color-swatch {
+  width: clamp(82px, 16vw, 110px);
+  height: clamp(82px, 16vw, 110px);
+  border-radius: 24px;
+  border: 5px solid var(--white-warm);
+  box-shadow: var(--shadow-soft);
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease;
+}
+.color-swatch:active { transform: scale(0.94); }
+.color-swatch.correct { box-shadow: 0 0 0 5px var(--green-ok), var(--shadow-soft); animation: correct-pop 0.6s ease-out; }
+.color-swatch.wrong-shake { animation: wrong-shake 0.5s ease-in-out; }
+.color-swatch.disabled { opacity: 0.35; cursor: not-allowed; pointer-events: none; }
+.color-swatch.show-correct { box-shadow: 0 0 0 6px var(--gold), var(--shadow-soft); animation: gold-glow 1s ease-in-out infinite; }
+
+.shape-btn {
+  width: clamp(86px, 17vw, 116px);
+  height: clamp(86px, 17vw, 116px);
+  background: var(--white-warm);
+  border: 5px solid var(--lavender);
+  border-radius: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+  padding: 12px;
+  box-sizing: border-box;
+}
+.shape-btn:active { transform: scale(0.94); }
+.shape-btn:hover { border-color: var(--purple); }
+.shape-btn.correct { border-color: var(--green-ok); animation: correct-pop 0.6s ease-out; background: linear-gradient(180deg,#B0EBC0,#7BD389); }
+.shape-btn.wrong-shake { animation: wrong-shake 0.5s ease-in-out; }
+.shape-btn.disabled { opacity: 0.35; pointer-events: none; }
+.shape-btn.show-correct { border-color: var(--gold); animation: gold-glow 1s ease-in-out infinite; background: linear-gradient(180deg,#FFE090,#FFC841); }
+.shape-svg { width: 100%; height: 100%; fill: var(--purple); }
+.shape-btn.correct .shape-svg, .shape-btn.show-correct .shape-svg { fill: var(--white-warm); }
+
+.colored-object {
+  font-size: clamp(120px, 22vw, 180px);
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--white-warm);
+  border-radius: var(--radius-lg);
+  padding: 20px 40px;
+  box-shadow: var(--shadow-soft);
+  border: 6px solid var(--pink-soft);
+  margin-bottom: 24px;
+  animation: display-pop 0.5s ease-out;
+}
+
 /* ---------- WELCOME SCREEN ---------- */
 .welcome-form {
   display: flex;
@@ -977,6 +1170,10 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
       <span style="font-size:36px">🔢</span>
       <span data-text-key="learnNumbers">בואי נלמד מספרים!</span>
     </button>
+    <button class="big-btn purple" onclick="goShapesMenu()">
+      <span style="font-size:36px">🎨</span>
+      <span data-text-key="learnShapes">בואי נלמד צבעים וצורות!</span>
+    </button>
   </div>
 
   <button class="corner-btn left" onclick="goAchievements()" title="ההישגים שלי">🏆</button>
@@ -988,10 +1185,6 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
 <div id="screen-letters-menu" class="screen">
   <div class="screen-title">🔤 איך נלמד אותיות?</div>
   <div class="menu-grid">
-    <div class="menu-card" onclick="startGame('letters','identify',1)">
-      <div class="icon">👀</div>
-      <div class="label">איזו אות זאת?</div>
-    </div>
     <div class="menu-card" onclick="startGame('letters','find',1)">
       <div class="icon">🔍</div>
       <div class="label" data-text-key="findLetter">מצאי את האות</div>
@@ -1003,6 +1196,14 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
     <div class="menu-card" onclick="startGame('letters','draw',1)">
       <div class="icon">✏️</div>
       <div class="label" data-text-key="drawLetter">ציירי את האות</div>
+    </div>
+    <div class="menu-card" onclick="startGame('letters','memory',1)">
+      <div class="icon">🃏</div>
+      <div class="label">משחק זיכרון</div>
+    </div>
+    <div class="menu-card" onclick="startGame('letters','sequence',1)">
+      <div class="icon">🪜</div>
+      <div class="label">סדרי לפי האלף-בית</div>
     </div>
   </div>
   <div class="screen-title" style="font-size:22px; margin-bottom:14px;" data-text-key="pickLevel">בחרי רמה:</div>
@@ -1040,13 +1241,57 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
       <div class="icon">🧮</div>
       <div class="label">חיבור עד 20</div>
     </div>
+    <div class="menu-card" onclick="startGame('math','subtract',1)">
+      <div class="icon">➖</div>
+      <div class="label">חיסור עד 10</div>
+    </div>
     <div class="menu-card" onclick="startGame('numbers','draw',1)">
       <div class="icon">✏️</div>
       <div class="label" data-text-key="drawNumber">ציירי את המספר</div>
     </div>
+    <div class="menu-card" onclick="startGame('numbers','memory',1)">
+      <div class="icon">🃏</div>
+      <div class="label">משחק זיכרון</div>
+    </div>
+    <div class="menu-card" onclick="startGame('numbers','sequence',1)">
+      <div class="icon">🪜</div>
+      <div class="label">סדרי לפי הסדר</div>
+    </div>
   </div>
   <div class="screen-title" style="font-size:22px; margin-bottom:14px;" data-text-key="pickLevel">בחרי רמה:</div>
   <div class="level-row" id="numbers-levels">
+    <button class="level-btn selected" data-level="1" onclick="selectLevel(this,1)">
+      <span>קל</span><span class="stars">⭐</span>
+    </button>
+    <button class="level-btn" data-level="2" onclick="selectLevel(this,2)">
+      <span>בינוני</span><span class="stars">⭐⭐</span>
+    </button>
+    <button class="level-btn" data-level="3" onclick="selectLevel(this,3)">
+      <span>קשה</span><span class="stars">⭐⭐⭐</span>
+    </button>
+  </div>
+  <button class="corner-btn right" onclick="goHome()">🏠</button>
+</div>
+
+<!-- ===== SHAPES & COLORS MENU ===== -->
+<div id="screen-shapes-menu" class="screen">
+  <div class="screen-title">🎨 צבעים וצורות</div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="startGame('shapes','color',1)">
+      <div class="icon">🌈</div>
+      <div class="label">איפה הצבע?</div>
+    </div>
+    <div class="menu-card" onclick="startGame('shapes','shape',1)">
+      <div class="icon">⭐</div>
+      <div class="label">איזו צורה זאת?</div>
+    </div>
+    <div class="menu-card" onclick="startGame('shapes','match',1)">
+      <div class="icon">🍎</div>
+      <div class="label">איזה צבע לאובייקט?</div>
+    </div>
+  </div>
+  <div class="screen-title" style="font-size:22px; margin-bottom:14px;" data-text-key="pickLevel">בחרי רמה:</div>
+  <div class="level-row" id="shapes-levels">
     <button class="level-btn selected" data-level="1" onclick="selectLevel(this,1)">
       <span>קל</span><span class="stars">⭐</span>
     </button>
@@ -1171,7 +1416,7 @@ function generateMathChoices(correct, level) {
   const choices = [correct];
   const pool = [];
   for (let d = 1; d <= 4; d++) {
-    if (correct - d >= 1) pool.push(correct - d);
+    if (correct - d >= 0) pool.push(correct - d);
     if (correct + d <= 20) pool.push(correct + d);
   }
   while (choices.length < 4 && pool.length) {
@@ -1182,12 +1427,55 @@ function generateMathChoices(correct, level) {
   return shuffle(choices);
 }
 
+function generateSubtractProblem(level) {
+  let aMin, aMax;
+  if (level === 1) { aMin = 2; aMax = 5; }
+  else if (level === 2) { aMin = 4; aMax = 8; }
+  else { aMin = 5; aMax = 10; }
+  const a = aMin + Math.floor(Math.random() * (aMax - aMin + 1));
+  const b = 1 + Math.floor(Math.random() * a); // 1..a (result >= 0)
+  const result = a - b;
+  return { a, b, result, id: a + '-' + b, op: '-' };
+}
+
 const STICKERS = ['🦄','🦋','🌸','🐯','🌈','⭐','🎀','🐰','🐱','🐶','🐼','🐨','🦊','🦁','🐸','🐧','🦉','🐢','🐬','🐳','🦒','🦓','🌻','🌷','🌺','🌼','🌹','🍓','🍎','🍒','🍰','🧁','🍭','🍬','🎂','🎈','🎁','🎊','🎉','🏆','💖','💝','💎','👑','🌙','☀️','🌟','✨','💫','🎨'];
 
 // Legacy placeholder — actual praises now in PRAISES_TBL with gender variants
 const PRAISES = ['כל הכבוד!'];
 
 const COUNT_OBJECTS = ['⭐','🌸','🦋','🍓','🌷','🎈','🐠','🦄','💖','🍎'];
+
+const COLORS = [
+  { name: 'אדום',  word: 'אדום',  hex: '#E64A4A', level:1 },
+  { name: 'כחול',  word: 'כחול',  hex: '#4A90E6', level:1 },
+  { name: 'ירוק',  word: 'ירוק',  hex: '#5BC85B', level:1 },
+  { name: 'צהוב',  word: 'צהוב',  hex: '#FFD93D', level:1 },
+  { name: 'ורוד',  word: 'ורוד',  hex: '#FF7AB6', level:2 },
+  { name: 'כתום',  word: 'כתום',  hex: '#FF9F4A', level:2 },
+  { name: 'סגול',  word: 'סגול',  hex: '#B89CFF', level:3 },
+  { name: 'חום',   word: 'חום',   hex: '#8B5A3B', level:3 },
+];
+
+const SHAPES = [
+  { name:'עיגול', word:'עיגול', svg:'<circle cx="50" cy="50" r="40"/>',                                                                                            level:1 },
+  { name:'ריבוע', word:'ריבוע', svg:'<rect x="12" y="12" width="76" height="76" rx="6"/>',                                                                          level:1 },
+  { name:'משולש', word:'משולש', svg:'<polygon points="50,10 90,86 10,86"/>',                                                                                        level:1 },
+  { name:'לב',    word:'לב',    svg:'<path d="M50 85 C 10 60, 10 25, 30 25 C 42 25, 50 35, 50 45 C 50 35, 58 25, 70 25 C 90 25, 90 60, 50 85 Z"/>',                  level:2 },
+  { name:'כוכב',  word:'כוכב',  svg:'<polygon points="50,8 60,38 92,38 67,58 76,90 50,72 24,90 33,58 8,38 40,38"/>',                                                level:2 },
+  { name:'מלבן',  word:'מלבן',  svg:'<rect x="6" y="26" width="88" height="48" rx="6"/>',                                                                            level:3 },
+  { name:'מעוין', word:'מעוין', svg:'<polygon points="50,8 92,50 50,92 8,50"/>',                                                                                     level:3 },
+];
+
+const COLORED_OBJECTS = [
+  { emoji:'🍎', color:'אדום' },{ emoji:'🍓', color:'אדום' },{ emoji:'🌹', color:'אדום' },{ emoji:'🍅', color:'אדום' },
+  { emoji:'🍌', color:'צהוב' },{ emoji:'🌻', color:'צהוב' },{ emoji:'🌼', color:'צהוב' },{ emoji:'🧀', color:'צהוב' },
+  { emoji:'🌿', color:'ירוק' },{ emoji:'🥒', color:'ירוק' },{ emoji:'🥦', color:'ירוק' },{ emoji:'🐸', color:'ירוק' },
+  { emoji:'🌊', color:'כחול' },{ emoji:'🫐', color:'כחול' },{ emoji:'💎', color:'כחול' },{ emoji:'🐋', color:'כחול' },
+  { emoji:'🌸', color:'ורוד' },{ emoji:'🎀', color:'ורוד' },{ emoji:'💕', color:'ורוד' },{ emoji:'🦩', color:'ורוד' },
+  { emoji:'🥕', color:'כתום' },{ emoji:'🎃', color:'כתום' },{ emoji:'🍊', color:'כתום' },{ emoji:'🦊', color:'כתום' },
+  { emoji:'🍇', color:'סגול' },{ emoji:'🍆', color:'סגול' },{ emoji:'🦄', color:'סגול' },{ emoji:'☂️', color:'סגול' },
+  { emoji:'🍫', color:'חום' },{ emoji:'🐻', color:'חום' },{ emoji:'🌰', color:'חום' },{ emoji:'🐴', color:'חום' },
+];
 
 const THEMES = ['garden','forest','sea','space','castle'];
 
@@ -1203,8 +1491,9 @@ const state = {
   theme: 'garden',
   selectedLevel: 1,
   mastery: {},          // {'letters_1': [chars...], 'numbers_3': [values...]}
-  unlockedLevels: { letters: 3, numbers: 3, math: 3 },
+  unlockedLevels: { letters: 3, numbers: 3, math: 3, shapes: 3 },
   mathCorrect: 0,
+  shapesCorrect: 0,
   profile: null,        // {name, gender:'f'|'m'} — set in welcome screen
 };
 
@@ -1213,6 +1502,7 @@ const texts = {
   homeBubble:    { f: 'למה את רוצה לשחק היום? 💖',       m: 'למה אתה רוצה לשחק היום? 💖' },
   learnLetters:  { f: 'בואי נלמד אותיות!',               m: 'בוא נלמד אותיות!' },
   learnNumbers:  { f: 'בואי נלמד מספרים!',               m: 'בוא נלמד מספרים!' },
+  learnShapes:   { f: 'בואי נלמד צבעים וצורות!',         m: 'בוא נלמד צבעים וצורות!' },
   findLetter:    { f: 'מצאי את האות',                    m: 'מצא את האות' },
   findNumber:    { f: 'מצאי את המספר',                   m: 'מצא את המספר' },
   drawLetter:    { f: 'ציירי את האות',                   m: 'צייר את האות' },
@@ -1316,8 +1606,10 @@ function loadState() {
     }
   } catch (e) {}
   if (!state.mastery) state.mastery = {};
-  if (!state.unlockedLevels) state.unlockedLevels = { letters: 3, numbers: 3, math: 3 };
+  if (!state.unlockedLevels) state.unlockedLevels = { letters: 3, numbers: 3, math: 3, shapes: 3 };
+  if (!state.unlockedLevels.shapes) state.unlockedLevels.shapes = 3;
   if (typeof state.mathCorrect !== 'number') state.mathCorrect = 0;
+  if (typeof state.shapesCorrect !== 'number') state.shapesCorrect = 0;
   document.body.className = 'theme-' + state.theme;
 }
 
@@ -1332,6 +1624,8 @@ function saveState() {
       mastery: state.mastery,
       unlockedLevels: state.unlockedLevels,
       mathCorrect: state.mathCorrect,
+      shapesCorrect: state.shapesCorrect,
+      profile: state.profile,
     }));
   } catch (e) {}
 }
@@ -1484,8 +1778,9 @@ function doReset() {
   state.stars = 0;
   state.stickers = [];
   state.mastery = {};
-  state.unlockedLevels = { letters: 3, numbers: 3, math: 3 };
+  state.unlockedLevels = { letters: 3, numbers: 3, math: 3, shapes: 3 };
   state.mathCorrect = 0;
+  state.shapesCorrect = 0;
   saveState();
   cancelReset();
   renderAchievements();
@@ -1499,6 +1794,11 @@ function goNumbersMenu() {
   state.selectedLevel = 1;
   resetLevelButtons('numbers-levels');
   refreshNumbersLevel4();
+}
+function goShapesMenu() {
+  showScreen('screen-shapes-menu');
+  state.selectedLevel = 1;
+  resetLevelButtons('shapes-levels');
 }
 function goAchievements() { showScreen('screen-achievements'); renderAchievements(); }
 
@@ -1563,6 +1863,14 @@ function rebuildPool() {
     else if (game.level === 2) game.pool = NUMBERS.filter(n => n.value >= 6 && n.value <= 10);
     else if (game.level === 3) game.pool = NUMBERS.slice();
     else if (game.level === 4) game.pool = NUMBERS_BIG.slice();
+  } else if (game.type === 'shapes') {
+    if (game.mode === 'color' || game.mode === 'match') {
+      game.pool = COLORS.filter(c => c.level <= game.level);
+    } else if (game.mode === 'shape') {
+      game.pool = SHAPES.filter(s => s.level <= game.level);
+    } else {
+      game.pool = COLORS.slice();
+    }
   } else {
     game.pool = []; // math generated dynamically
   }
@@ -1625,10 +1933,18 @@ function nextQuestion() {
   game.locked = false;
   game.currentIsPerfect = true;
 
+  // Memory & sequence build their own board; no single "current" item
+  if (game.mode === 'memory' || game.mode === 'sequence') {
+    renderQuestion();
+    renderRafi(document.getElementById('game-rafi-wrap'), 'idle');
+    return;
+  }
+
   if (game.type === 'math') {
+    const gen = game.mode === 'subtract' ? generateSubtractProblem : generateMathProblem;
     let problem, guard = 0;
     do {
-      problem = generateMathProblem(game.level);
+      problem = gen(game.level);
       guard++;
     } while (game.sessionSeen.has(problem.id) && guard < 40);
     if (guard >= 40) game.sessionSeen.clear();
@@ -1641,7 +1957,6 @@ function nextQuestion() {
     let available = game.pool.filter(p => !game.sessionSeen.has(getItemId(p)));
     if (available.length === 0) {
       game.sessionSeen.clear();
-      // After reset, still avoid the very last item to prevent immediate repeat
       available = game.pool.filter(p => getItemId(p) !== game.lastItemId);
       if (available.length === 0) available = game.pool.slice();
     }
@@ -1649,7 +1964,7 @@ function nextQuestion() {
     game.current = cand;
     game.lastItemId = getItemId(cand);
     game.sessionSeen.add(getItemId(cand));
-    const distractorCount = game.mode === 'identify' || game.mode === 'match' ? 2 : 3;
+    const distractorCount = game.mode === 'match' || game.mode === 'identify' ? 2 : 3;
     const distractors = pickN(game.pool, distractorCount, game.current);
     game.choices = shuffle([game.current, ...distractors]);
   }
@@ -1663,6 +1978,7 @@ function getItemId(item) {
   if (game.type === 'letters') return item.char;
   if (game.type === 'numbers') return String(item.value);
   if (game.type === 'math') return item.id;
+  if (game.type === 'shapes') return item.name;
   return null;
 }
 
@@ -1670,20 +1986,27 @@ function getDisplayChar(item) {
   if (game.type === 'letters') return item.char;
   if (game.type === 'numbers') return String(item.value);
   if (game.type === 'math') return String(item.result);
+  if (game.type === 'shapes') return item.name;
 }
 function getNameToSpeak(item) {
   if (game.type === 'letters') return item.name;
   if (game.type === 'numbers') return item.word;
   if (game.type === 'math') return numberWord(item.result);
+  if (game.type === 'shapes') return item.word;
 }
 
 function renderQuestion() {
   const body = document.getElementById('game-body');
   body.innerHTML = '';
 
-  if (game.mode === 'draw') {
-    renderDrawMode();
-    return;
+  if (game.mode === 'draw')     { renderDrawMode();     return; }
+  if (game.mode === 'memory')   { renderMemoryMode();   return; }
+  if (game.mode === 'sequence') { renderSequenceMode(); return; }
+
+  if (game.type === 'shapes') {
+    if (game.mode === 'color')      { renderColorMode();      return; }
+    if (game.mode === 'shape')      { renderShapeMode();      return; }
+    if (game.mode === 'match')      { renderMatchColorMode(); return; }
   }
 
   if (game.type === 'letters') {
@@ -1770,17 +2093,20 @@ function renderQuestion() {
     }
 
   } else if (game.type === 'math') {
+    const isSub = game.mode === 'subtract';
     const prompt = document.createElement('div');
     prompt.className = 'question-prompt';
     prompt.textContent = gx('mathPrompt');
     body.appendChild(prompt);
 
+    const opSymbol = isSub ? '−' : '+';
+    const opColor = isSub ? '#FF7A7A' : '#FF9F7A';
     const display = document.createElement('div');
     display.className = 'big-display';
     display.innerHTML = `
       <div class="display-number" style="direction:ltr; font-size:clamp(70px,13vw,110px); display:flex; align-items:center; gap:14px;">
         <span>${game.current.a}</span>
-        <span style="-webkit-text-fill-color:#FF9F7A;color:#FF9F7A">+</span>
+        <span style="-webkit-text-fill-color:${opColor};color:${opColor}">${opSymbol}</span>
         <span>${game.current.b}</span>
         <span style="-webkit-text-fill-color:#B89CFF;color:#B89CFF">=</span>
         <span style="-webkit-text-fill-color:#6B5B8E;color:#6B5B8E">?</span>
@@ -1792,7 +2118,9 @@ function renderQuestion() {
     speakBtn.innerHTML = '🔊';
     speakBtn.style.width = '80px'; speakBtn.style.height = '80px'; speakBtn.style.fontSize = '34px';
     speakBtn.style.marginBottom = '18px';
-    const sayProblem = () => speak('כמה זה ' + numberWord(game.current.a) + ' ועוד ' + numberWord(game.current.b) + '?');
+    const sayProblem = () => speak(isSub
+      ? ('כמה זה ' + numberWord(game.current.a) + ' פחות ' + numberWord(game.current.b) + '?')
+      : ('כמה זה ' + numberWord(game.current.a) + ' ועוד ' + numberWord(game.current.b) + '?'));
     speakBtn.onclick = sayProblem;
     body.appendChild(speakBtn);
     setTimeout(sayProblem, 350);
@@ -2172,6 +2500,313 @@ function onDrawWrong(res) {
 }
 
 /* ============================================================
+   COLORS / SHAPES MODES
+   ============================================================ */
+function renderColorMode() {
+  const body = document.getElementById('game-body');
+  body.innerHTML = '';
+  const prompt = document.createElement('div');
+  prompt.className = 'question-prompt';
+  prompt.textContent = 'איפה ' + game.current.word + '? 🌈';
+  body.appendChild(prompt);
+
+  setTimeout(() => speak('איפה ה' + game.current.word + '?'), 350);
+
+  const speakBtn = document.createElement('button');
+  speakBtn.className = 'sound-big';
+  speakBtn.innerHTML = '🔊';
+  speakBtn.style.width = '80px'; speakBtn.style.height = '80px'; speakBtn.style.fontSize = '34px';
+  speakBtn.style.marginBottom = '18px';
+  speakBtn.onclick = () => speak('איפה ה' + game.current.word + '?');
+  body.appendChild(speakBtn);
+
+  const row = document.createElement('div');
+  row.className = 'swatch-row';
+  game.choices.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'color-swatch';
+    b.style.background = c.hex;
+    b.dataset.value = c.name;
+    b.onclick = () => handleAnswer(b, c === game.current);
+    row.appendChild(b);
+  });
+  body.appendChild(row);
+}
+
+function renderShapeMode() {
+  const body = document.getElementById('game-body');
+  body.innerHTML = '';
+  const prompt = document.createElement('div');
+  prompt.className = 'question-prompt';
+  prompt.textContent = 'מצאי את ה' + game.current.word + ' ⭐';
+  if (ggen() === 'm') prompt.textContent = 'מצא את ה' + game.current.word + ' ⭐';
+  body.appendChild(prompt);
+
+  const sayIt = () => speak((ggen()==='m' ? 'מצא את ה' : 'מצאי את ה') + game.current.word);
+  setTimeout(sayIt, 350);
+
+  const speakBtn = document.createElement('button');
+  speakBtn.className = 'sound-big';
+  speakBtn.innerHTML = '🔊';
+  speakBtn.style.width = '80px'; speakBtn.style.height = '80px'; speakBtn.style.fontSize = '34px';
+  speakBtn.style.marginBottom = '18px';
+  speakBtn.onclick = sayIt;
+  body.appendChild(speakBtn);
+
+  const row = document.createElement('div');
+  row.className = 'shape-row';
+  game.choices.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'shape-btn';
+    b.dataset.value = s.name;
+    b.innerHTML = '<svg class="shape-svg" viewBox="0 0 100 100">' + s.svg + '</svg>';
+    b.onclick = () => handleAnswer(b, s === game.current);
+    row.appendChild(b);
+  });
+  body.appendChild(row);
+}
+
+function renderMatchColorMode() {
+  const body = document.getElementById('game-body');
+  body.innerHTML = '';
+  // Pick an object whose color is game.current
+  const possibleObjects = COLORED_OBJECTS.filter(o => o.color === game.current.name);
+  const obj = possibleObjects[Math.floor(Math.random() * possibleObjects.length)] || { emoji: '🎨', color: game.current.name };
+
+  const prompt = document.createElement('div');
+  prompt.className = 'question-prompt';
+  prompt.textContent = 'מה הצבע שלו? 🎨';
+  body.appendChild(prompt);
+
+  const objBox = document.createElement('div');
+  objBox.className = 'colored-object';
+  objBox.textContent = obj.emoji;
+  body.appendChild(objBox);
+
+  setTimeout(() => speak('מה הצבע שלו?'), 350);
+
+  const row = document.createElement('div');
+  row.className = 'swatch-row';
+  game.choices.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'color-swatch';
+    b.style.background = c.hex;
+    b.dataset.value = c.name;
+    b.onclick = () => handleAnswer(b, c === game.current);
+    row.appendChild(b);
+  });
+  body.appendChild(row);
+}
+
+/* ============================================================
+   MEMORY GAME
+   ============================================================ */
+const memory = { cards: [], firstPick: null, locked: false, matched: 0, target: 0 };
+
+function renderMemoryMode() {
+  const body = document.getElementById('game-body');
+  body.innerHTML = '';
+
+  // pairs count by level
+  const pairsByLevel = { 1: 4, 2: 6, 3: 8 };
+  const pairs = pairsByLevel[game.level] || 6;
+
+  let pool;
+  if (game.type === 'letters') pool = LETTERS.filter(l => l.level <= game.level).slice(0, pairs);
+  else pool = (game.pool && game.pool.length ? game.pool : NUMBERS).slice(0, pairs);
+
+  const items = [];
+  pool.forEach(p => {
+    items.push({ id: getItemId(p), display: game.type === 'letters' ? p.char : String(p.value), name: game.type === 'letters' ? p.name : p.word });
+    items.push({ id: getItemId(p), display: game.type === 'letters' ? p.char : String(p.value), name: game.type === 'letters' ? p.name : p.word });
+  });
+  shuffle(items);
+
+  memory.cards = items;
+  memory.firstPick = null;
+  memory.locked = false;
+  memory.matched = 0;
+  memory.target = pool.length;
+
+  const prompt = document.createElement('div');
+  prompt.className = 'question-prompt';
+  prompt.textContent = ggen() === 'm' ? 'מצא את הזוגות הזהים! 🃏' : 'מצאי את הזוגות הזהים! 🃏';
+  body.appendChild(prompt);
+
+  const grid = document.createElement('div');
+  grid.className = 'memory-grid';
+  const cols = items.length <= 8 ? 4 : (items.length <= 12 ? 4 : 4);
+  grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+  grid.style.maxWidth = Math.min(420, cols * 90) + 'px';
+  grid.style.width = '100%';
+
+  items.forEach((card, idx) => {
+    const el = document.createElement('div');
+    el.className = 'memory-card';
+    el.dataset.idx = idx;
+    el.innerHTML = '<div class="memory-face back">?</div><div class="memory-face front">' + card.display + '</div>';
+    el.onclick = () => memoryFlip(idx, el);
+    grid.appendChild(el);
+  });
+  body.appendChild(grid);
+  setTimeout(() => speak(ggen()==='m' ? 'מצא את הזוגות' : 'מצאי את הזוגות'), 400);
+}
+
+function memoryFlip(idx, el) {
+  if (memory.locked) return;
+  if (el.classList.contains('flipped') || el.classList.contains('matched')) return;
+  el.classList.add('flipped');
+  const card = memory.cards[idx];
+  speak(card.name);
+
+  if (!memory.firstPick) {
+    memory.firstPick = { idx, el, card };
+    return;
+  }
+  // Second pick
+  if (memory.firstPick.card.id === card.id && memory.firstPick.idx !== idx) {
+    // Match!
+    memory.firstPick.el.classList.add('matched');
+    el.classList.add('matched');
+    memory.matched++;
+    memory.firstPick = null;
+    spawnStarBurst(el);
+    if (memory.matched >= memory.target) {
+      memory.locked = true;
+      setTimeout(memoryComplete, 800);
+    }
+  } else {
+    // Mismatch — flip both back
+    memory.locked = true;
+    const first = memory.firstPick;
+    memory.firstPick = null;
+    game.currentIsPerfect = false;
+    game.perfectStreak = 0;
+    setTimeout(() => {
+      first.el.classList.remove('flipped');
+      el.classList.remove('flipped');
+      memory.locked = false;
+    }, 900);
+  }
+}
+
+function memoryComplete() {
+  spawnConfetti();
+  renderRafi(document.getElementById('game-rafi-wrap'), 'cheering');
+  if (game.currentIsPerfect) game.perfectStreak = (game.perfectStreak || 0) + 1;
+  state.stars++;
+  updateStarsDisplay();
+  game.roundProgress++;
+  buildProgressDots();
+  saveState();
+  speak(gPraise());
+  setTimeout(() => {
+    if (shouldPromote()) { promoteLevel(); return; }
+    if (game.roundProgress >= 5) grantSticker();
+    else nextQuestion();
+  }, 1800);
+}
+
+/* ============================================================
+   SEQUENCE GAME
+   ============================================================ */
+const seq = { target: [], placedCount: 0 };
+
+function renderSequenceMode() {
+  const body = document.getElementById('game-body');
+  body.innerHTML = '';
+
+  // pick 4-6 contiguous items from pool
+  const sizeByLevel = { 1: 4, 2: 5, 3: 6 };
+  const size = sizeByLevel[game.level] || 5;
+
+  let target;
+  if (game.type === 'letters') {
+    // contiguous alphabet chunk
+    const basePool = LETTERS.filter(l => l.level <= game.level && !l.name.includes('סוֹפִית'));
+    const start = Math.floor(Math.random() * Math.max(1, basePool.length - size));
+    target = basePool.slice(start, start + size);
+  } else {
+    // contiguous numbers
+    const pool = game.pool && game.pool.length ? game.pool.slice().sort((a,b) => a.value - b.value) : NUMBERS;
+    const start = Math.floor(Math.random() * Math.max(1, pool.length - size));
+    target = pool.slice(start, start + size);
+  }
+  seq.target = target;
+  seq.placedCount = 0;
+
+  const prompt = document.createElement('div');
+  prompt.className = 'seq-prompt';
+  prompt.textContent = game.type === 'letters'
+    ? (ggen()==='m' ? 'סדר את האותיות לפי האלף-בית 🪜' : 'סדרי את האותיות לפי האלף-בית 🪜')
+    : (ggen()==='m' ? 'סדר את המספרים מקטן לגדול 🪜' : 'סדרי את המספרים מקטן לגדול 🪜');
+  body.appendChild(prompt);
+
+  const slots = document.createElement('div');
+  slots.className = 'seq-slots';
+  target.forEach((it, i) => {
+    const s = document.createElement('div');
+    s.className = 'seq-slot';
+    s.id = 'seq-slot-' + i;
+    slots.appendChild(s);
+  });
+  body.appendChild(slots);
+
+  const shuffled = shuffle(target.slice());
+  const items = document.createElement('div');
+  items.className = 'seq-items';
+  shuffled.forEach(it => {
+    const b = document.createElement('button');
+    b.className = 'seq-item';
+    b.textContent = game.type === 'letters' ? it.char : it.value;
+    b.dataset.id = getItemId(it);
+    b.onclick = () => seqPick(b, it);
+    items.appendChild(b);
+  });
+  body.appendChild(items);
+  setTimeout(() => speak(game.type === 'letters' ? (ggen()==='m'?'סדר לפי האלף-בית':'סדרי לפי האלף-בית') : (ggen()==='m'?'סדר מקטן לגדול':'סדרי מקטן לגדול')), 400);
+}
+
+function seqPick(btn, item) {
+  if (btn.classList.contains('used')) return;
+  const expected = seq.target[seq.placedCount];
+  if (getItemId(expected) === getItemId(item)) {
+    btn.classList.add('used');
+    const slot = document.getElementById('seq-slot-' + seq.placedCount);
+    slot.classList.add('filled');
+    slot.textContent = game.type === 'letters' ? item.char : item.value;
+    speak(game.type === 'letters' ? item.name : item.word);
+    seq.placedCount++;
+    if (seq.placedCount >= seq.target.length) {
+      setTimeout(seqComplete, 700);
+    }
+  } else {
+    btn.classList.add('shake-wrong');
+    game.currentIsPerfect = false;
+    game.perfectStreak = 0;
+    speak(gx('tryAgainSlow'));
+    setTimeout(() => btn.classList.remove('shake-wrong'), 600);
+  }
+}
+
+function seqComplete() {
+  spawnConfetti();
+  renderRafi(document.getElementById('game-rafi-wrap'), 'cheering');
+  if (game.currentIsPerfect) game.perfectStreak = (game.perfectStreak || 0) + 1;
+  state.stars++;
+  updateStarsDisplay();
+  game.roundProgress++;
+  buildProgressDots();
+  saveState();
+  speak(gPraise());
+  setTimeout(() => {
+    if (shouldPromote()) { promoteLevel(); return; }
+    if (game.roundProgress >= 5) grantSticker();
+    else nextQuestion();
+  }, 1800);
+}
+
+/* ============================================================
    ANSWER HANDLING + FEEDBACK
    ============================================================ */
 function handleAnswer(btn, isCorrect) {
@@ -2206,6 +2841,11 @@ function onCorrect(btn) {
     if (!state.mastery[key].includes(id)) state.mastery[key].push(id);
   } else if (game.type === 'math') {
     state.mathCorrect = (state.mathCorrect || 0) + 1;
+  } else if (game.type === 'shapes') {
+    state.shapesCorrect = (state.shapesCorrect || 0) + 1;
+    const key = 'shapes_' + game.level;
+    state.mastery[key] = state.mastery[key] || [];
+    if (game.current && !state.mastery[key].includes(getItemId(game.current))) state.mastery[key].push(getItemId(game.current));
   }
 
   // perfect streak tracking
@@ -2248,6 +2888,7 @@ function getMaxLevel(type) {
   if (type === 'letters') return 3;
   if (type === 'numbers') return 4;
   if (type === 'math') return 3;
+  if (type === 'shapes') return 3;
   return 3;
 }
 
@@ -2343,8 +2984,8 @@ function onWrong(btn) {
 }
 
 function findCorrectBtn() {
-  const want = String(getDisplayChar(game.current));
-  return [...document.querySelectorAll('#game-body .answer-btn')]
+  const want = game.type === 'math' ? String(game.current.result) : String(getDisplayChar(game.current));
+  return [...document.querySelectorAll('#game-body .answer-btn, #game-body .color-swatch, #game-body .shape-btn')]
     .find(b => String(b.dataset.value) === want);
 }
 
@@ -2422,6 +3063,7 @@ function renderAchievements() {
   const lettersCount = Object.keys(state.lettersLearned).filter(k => state.lettersLearned[k] > 0).length;
   const numbersCount = Object.keys(state.numbersLearned).filter(k => state.numbersLearned[k] > 0).length;
   const mathDone = state.mathCorrect || 0;
+  const shapesDone = state.shapesCorrect || 0;
   const bigNumbersUnlocked = state.unlockedLevels && state.unlockedLevels.numbers >= 4;
 
   scroll.innerHTML = `
@@ -2446,6 +3088,11 @@ function renderAchievements() {
     <div class="ach-section">
       <h3>${gx('achMath')}</h3>
       <div class="ach-summary" style="margin:0">פתרת <b>${mathDone}</b> תרגילים — איזה מוח חכם! ✨</div>
+    </div>` : ''}
+    ${shapesDone ? `
+    <div class="ach-section">
+      <h3>🎨 צבעים וצורות</h3>
+      <div class="ach-summary" style="margin:0">זיהית <b>${shapesDone}</b> צבעים וצורות! 🌈</div>
     </div>` : ''}
     <div class="ach-section">
       <h3>${gx('achStickers')} (${state.stickers.length}/${STICKERS.length})</h3>
