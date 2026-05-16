@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
 <meta charset="UTF-8">
@@ -122,11 +122,23 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
   opacity: 0;
   transform: translateX(-30px);
   transition: opacity 0.4s ease, transform 0.4s ease;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 .screen.active {
   display: flex;
   opacity: 1;
   transform: translateX(0);
+}
+/* Menu screens stack top-down so corner buttons don't crowd content */
+#screen-letters-menu.active,
+#screen-numbers-menu.active,
+#screen-achievements.active,
+#screen-welcome.active {
+  justify-content: flex-start;
+  padding-top: max(90px, calc(env(safe-area-inset-top) + 76px));
+  padding-bottom: max(40px, calc(env(safe-area-inset-bottom) + 30px));
 }
 
 /* ---------- HOME SCREEN ---------- */
@@ -672,6 +684,64 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
   box-shadow: var(--shadow-soft);
 }
 
+/* ---------- WELCOME SCREEN ---------- */
+.welcome-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  max-width: 380px;
+  margin-top: 12px;
+}
+.welcome-input {
+  font-family: inherit;
+  font-size: 22px;
+  padding: 16px 22px;
+  border: 4px solid var(--lavender);
+  border-radius: var(--radius-md);
+  background: var(--white-warm);
+  color: var(--ink);
+  text-align: center;
+  outline: none;
+  font-weight: 700;
+  direction: rtl;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.welcome-input:focus { border-color: var(--pink-hot); }
+.welcome-input::placeholder { color: var(--ink-soft); opacity: 0.6; }
+
+.gender-row { display: flex; gap: 14px; justify-content: center; }
+.gender-btn {
+  flex: 1;
+  background: var(--white-warm);
+  border: 4px solid var(--lavender);
+  border-radius: var(--radius-md);
+  padding: 18px 12px;
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 22px;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+.gender-btn .emoji { font-size: 52px; line-height: 1; }
+.gender-btn.selected { border-color: var(--pink-hot); background: #FFF0F7; transform: scale(1.04); }
+.gender-btn:active { transform: scale(0.95); }
+
+/* ---------- RESET CONFIRM ---------- */
+.reset-confirm-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 18px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
 /* ---------- DRAW MODE ---------- */
 .draw-target {
   display: flex;
@@ -752,8 +822,6 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
 .ach-scroll {
   width: 100%;
   max-width: 600px;
-  max-height: calc(100vh - 140px);
-  overflow-y: auto;
   padding: 10px 6px;
 }
 .ach-section {
@@ -850,34 +918,69 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
   <div class="decor d8">🌼</div>
 </div>
 
+<!-- ===== WELCOME SCREEN ===== -->
+<div id="screen-welcome" class="screen">
+  <div class="hello-row">
+    <div class="hello-letters">
+      <span>ש</span><span>ל</span><span>ו</span><span>ם</span><span>!</span>
+    </div>
+  </div>
+  <div class="subtitle">🌸 בואו נכיר 🌸</div>
+
+  <div class="rafi-wrap happy" id="welcome-rafi-wrap"></div>
+
+  <div class="speech-bubble">אני רפי הארנב! איך קוראים לך? 💖</div>
+
+  <div class="welcome-form">
+    <input type="text" id="welcome-name" placeholder="השם שלי הוא..." maxlength="20" class="welcome-input" autocomplete="off">
+
+    <div class="gender-row">
+      <button class="gender-btn" id="welcome-girl" onclick="pickGender('f')" type="button">
+        <span class="emoji">👧</span>
+        <span>בת</span>
+      </button>
+      <button class="gender-btn" id="welcome-boy" onclick="pickGender('m')" type="button">
+        <span class="emoji">👦</span>
+        <span>בן</span>
+      </button>
+    </div>
+
+    <button class="big-btn mint" onclick="finishWelcome()" type="button">
+      <span style="font-size:32px">✨</span>
+      <span>בואו נתחיל!</span>
+    </button>
+  </div>
+</div>
+
 <!-- ===== HOME SCREEN ===== -->
 <div id="screen-home" class="screen active">
   <div class="hello-row">
-    <div class="hello-letters">
+    <div class="hello-letters" id="hello-line">
       <span>ש</span><span>ל</span><span>ו</span><span>ם</span>
       <span>&nbsp;</span>
       <span>ר</span><span>י</span><span>ף</span>
       <span>!</span>
     </div>
   </div>
-  <div class="subtitle">🌸 בואי נשחק וניהנה יחד 🌸</div>
+  <div class="subtitle" data-text-key="subtitleHome">🌸 בואי נשחק וניהנה יחד 🌸</div>
 
   <div class="rafi-wrap happy" id="home-rafi-wrap"></div>
 
-  <div class="speech-bubble" id="home-bubble">למה את רוצה לשחק היום? 💖</div>
+  <div class="speech-bubble" id="home-bubble" data-text-key="homeBubble">למה את רוצה לשחק היום? 💖</div>
 
   <div class="home-buttons">
     <button class="big-btn peach" onclick="goLettersMenu()">
       <span style="font-size:36px">🔤</span>
-      <span>בואי נלמד אותיות!</span>
+      <span data-text-key="learnLetters">בואי נלמד אותיות!</span>
     </button>
     <button class="big-btn mint" onclick="goNumbersMenu()">
       <span style="font-size:36px">🔢</span>
-      <span>בואי נלמד מספרים!</span>
+      <span data-text-key="learnNumbers">בואי נלמד מספרים!</span>
     </button>
   </div>
 
   <button class="corner-btn left" onclick="goAchievements()" title="ההישגים שלי">🏆</button>
+  <button class="corner-btn left left2" onclick="goWelcome()" title="להחליף פרופיל">👤</button>
   <button class="corner-btn right" onclick="cycleTheme()" title="ערכת נושא">🎨</button>
 </div>
 
@@ -891,7 +994,7 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
     </div>
     <div class="menu-card" onclick="startGame('letters','find',1)">
       <div class="icon">🔍</div>
-      <div class="label">מצאי את האות</div>
+      <div class="label" data-text-key="findLetter">מצאי את האות</div>
     </div>
     <div class="menu-card" onclick="startGame('letters','match',1)">
       <div class="icon">🔊</div>
@@ -899,10 +1002,10 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
     </div>
     <div class="menu-card" onclick="startGame('letters','draw',1)">
       <div class="icon">✏️</div>
-      <div class="label">ציירי את האות</div>
+      <div class="label" data-text-key="drawLetter">ציירי את האות</div>
     </div>
   </div>
-  <div class="screen-title" style="font-size:22px; margin-bottom:14px;">בחרי רמה:</div>
+  <div class="screen-title" style="font-size:22px; margin-bottom:14px;" data-text-key="pickLevel">בחרי רמה:</div>
   <div class="level-row" id="letters-levels">
     <button class="level-btn selected" data-level="1" onclick="selectLevel(this,1)">
       <span>קל</span><span class="stars">⭐</span>
@@ -927,7 +1030,7 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
     </div>
     <div class="menu-card" onclick="startGame('numbers','find',1)">
       <div class="icon">🔍</div>
-      <div class="label">מצאי את המספר</div>
+      <div class="label" data-text-key="findNumber">מצאי את המספר</div>
     </div>
     <div class="menu-card" onclick="startGame('numbers','match',1)">
       <div class="icon">🔊</div>
@@ -939,10 +1042,10 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
     </div>
     <div class="menu-card" onclick="startGame('numbers','draw',1)">
       <div class="icon">✏️</div>
-      <div class="label">ציירי את המספר</div>
+      <div class="label" data-text-key="drawNumber">ציירי את המספר</div>
     </div>
   </div>
-  <div class="screen-title" style="font-size:22px; margin-bottom:14px;">בחרי רמה:</div>
+  <div class="screen-title" style="font-size:22px; margin-bottom:14px;" data-text-key="pickLevel">בחרי רמה:</div>
   <div class="level-row" id="numbers-levels">
     <button class="level-btn selected" data-level="1" onclick="selectLevel(this,1)">
       <span>קל</span><span class="stars">⭐</span>
@@ -976,7 +1079,7 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
 
 <!-- ===== ACHIEVEMENTS SCREEN ===== -->
 <div id="screen-achievements" class="screen">
-  <div class="screen-title">🏆 ההישגים שלך, ריף!</div>
+  <div class="screen-title" id="ach-title">🏆 ההישגים שלך!</div>
   <div class="ach-scroll" id="ach-scroll"></div>
   <button class="corner-btn right" onclick="goHome()">🏠</button>
 </div>
@@ -1081,18 +1184,8 @@ function generateMathChoices(correct, level) {
 
 const STICKERS = ['🦄','🦋','🌸','🐯','🌈','⭐','🎀','🐰','🐱','🐶','🐼','🐨','🦊','🦁','🐸','🐧','🦉','🐢','🐬','🐳','🦒','🦓','🌻','🌷','🌺','🌼','🌹','🍓','🍎','🍒','🍰','🧁','🍭','🍬','🎂','🎈','🎁','🎊','🎉','🏆','💖','💝','💎','👑','🌙','☀️','🌟','✨','💫','🎨'];
 
-const PRAISES = [
-  'כל הכבוד ריף!',
-  'מעולה! אלופה!',
-  'יפה מאוד!',
-  'וואו, את אלופה!',
-  'יש! עוד אחת נכונה!',
-  'את לומדת ממש מהר!',
-  'פשוט מעולה!',
-  'אני גאה בך!',
-  'נהדר ריף!',
-  'איזה כיף, צדקת!'
-];
+// Legacy placeholder — actual praises now in PRAISES_TBL with gender variants
+const PRAISES = ['כל הכבוד!'];
 
 const COUNT_OBJECTS = ['⭐','🌸','🦋','🍓','🌷','🎈','🐠','🦄','💖','🍎'];
 
@@ -1112,7 +1205,107 @@ const state = {
   mastery: {},          // {'letters_1': [chars...], 'numbers_3': [values...]}
   unlockedLevels: { letters: 3, numbers: 3, math: 3 },
   mathCorrect: 0,
+  profile: null,        // {name, gender:'f'|'m'} — set in welcome screen
 };
+
+const texts = {
+  subtitleHome:  { f: '🌸 בואי נשחק וניהנה יחד 🌸',     m: '🌸 בוא נשחק וניהנה יחד 🌸' },
+  homeBubble:    { f: 'למה את רוצה לשחק היום? 💖',       m: 'למה אתה רוצה לשחק היום? 💖' },
+  learnLetters:  { f: 'בואי נלמד אותיות!',               m: 'בוא נלמד אותיות!' },
+  learnNumbers:  { f: 'בואי נלמד מספרים!',               m: 'בוא נלמד מספרים!' },
+  findLetter:    { f: 'מצאי את האות',                    m: 'מצא את האות' },
+  findNumber:    { f: 'מצאי את המספר',                   m: 'מצא את המספר' },
+  drawLetter:    { f: 'ציירי את האות',                   m: 'צייר את האות' },
+  drawNumber:    { f: 'ציירי את המספר',                  m: 'צייר את המספר' },
+  pickLevel:     { f: 'בחרי רמה:',                       m: 'בחר רמה:' },
+  whichLetter:   { f: 'איזו אות זאת? לחצי על הצליל הנכון 🔊', m: 'איזו אות זאת? לחץ על הצליל הנכון 🔊' },
+  findLetterPrompt: { f: 'מצאי את האות שאני אומר 🔍',    m: 'מצא את האות שאני אומר 🔍' },
+  findNumberPrompt: { f: 'מצאי את המספר שאני אומר 🔍',   m: 'מצא את המספר שאני אומר 🔍' },
+  countPrompt:   { f: 'כמה יש פה? סִפְרִי 🌟',           m: 'כמה יש פה? סְפֹר 🌟' },
+  mathPrompt:    { f: 'כמה זה? חשבי 🧮',                 m: 'כמה זה? חשוב 🧮' },
+  drawAsk:       { f: 'ציירי את האות:',                  m: 'צייר את האות:' },
+  drawAskNum:    { f: 'ציירי את המספר:',                 m: 'צייר את המספר:' },
+  achTitle:      { f: '🏆 ההישגים שלך, {name}!',         m: '🏆 ההישגים שלך, {name}!' },
+  achKnow:       { f: 'את מכירה',                        m: 'אתה מכיר' },
+  achLetters:    { f: '🔤 אותיות שלמדת',                 m: '🔤 אותיות שלמדת' },
+  achNumbers:    { f: '🔢 מספרים שלמדת (1 עד 10)',       m: '🔢 מספרים שלמדת (1 עד 10)' },
+  achBigNumbers: { f: '🏆 מספרים גדולים (11 עד 20)',     m: '🏆 מספרים גדולים (11 עד 20)' },
+  achMath:       { f: '🧮 תרגילי חשבון',                 m: '🧮 תרגילי חשבון' },
+  achStickers:   { f: '🎁 המדבקות שלך',                  m: '🎁 המדבקות שלך' },
+  achReset:      { f: '🔄 התחלה מחדש',                   m: '🔄 התחלה מחדש' },
+  achResetConfirm: { f: 'בטוחה? כל ההישגים יימחקו', m: 'בטוח? כל ההישגים יימחקו' },
+  resetYes:      { f: 'כן, להתחיל מחדש',                 m: 'כן, להתחיל מחדש' },
+  resetNo:       { f: 'לא, להישאר',                      m: 'לא, להישאר' },
+  greet:         { f: 'שלום {name}! למה את רוצה לשחק היום?', m: 'שלום {name}! למה אתה רוצה לשחק היום?' },
+  oops:          { f: 'אופס! בואי ננסה שוב',             m: 'אופס! בוא ננסה שוב' },
+  notBadLetter:  { f: 'לא נורא! האות הזאת קוראים ',      m: 'לא נורא! האות הזאת קוראים ' },
+  notBadNumber:  { f: 'לא נורא! המספר הזה הוא ',         m: 'לא נורא! המספר הזה הוא ' },
+  notBadMath:    { f: 'לא נורא! התשובה היא ',            m: 'לא נורא! התשובה היא ' },
+  thisLetterIs:  { f: 'זו האות {n}. בואי נשמע איך היא נשמעת', m: 'זו האות {n}. בוא נשמע איך היא נשמעת' },
+  thisNumberIs:  { f: 'זה המספר {n}',                    m: 'זה המספר {n}' },
+  thisMathIs:    { f: 'התשובה היא {n}',                  m: 'התשובה היא {n}' },
+  drawAskLetter: { f: 'ציירי את האות {n}',               m: 'צייר את האות {n}' },
+  drawAskNumber: { f: 'ציירי את המספר {n}',              m: 'צייר את המספר {n}' },
+  tryAgainSlow:  { f: 'כמעט! ננסי שוב, יותר לאט',        m: 'כמעט! ננסה שוב, יותר לאט' },
+  drawOnDots:    { f: 'נסי לצייר על כל הנקודות הקטנות',  m: 'נסה לצייר על כל הנקודות הקטנות' },
+  drawMoreDots:  { f: 'כמעט! עוד קצת על הנקודות',        m: 'כמעט! עוד קצת על הנקודות' },
+  levelUpTitle:  { f: 'כל הכבוד {name}!<br>עברת לרמה {lvl}! 🎉', m: 'כל הכבוד {name}!<br>עברת לרמה {lvl}! 🎉' },
+  levelUpVoice:  { f: 'כל הכבוד {name}! עברת לרמה {lvl}', m: 'כל הכבוד {name}! עברת לרמה {lvl}' },
+  bigNumbersExtra:{ f:'עכשיו נלמד מספרים גדולים — 11 עד 20!', m: 'עכשיו נלמד מספרים גדולים — 11 עד 20!' },
+  newSticker:    { f: 'קיבלת מדבקה חדשה! 🎉',            m: 'קיבלת מדבקה חדשה! 🎉' },
+  newStickerVoice:{f: 'וואו {name}! קיבלת מדבקה חדשה!',   m: 'וואו {name}! קיבלת מדבקה חדשה!' },
+  resetDone:     { f: 'יופי! מתחילים מחדש',              m: 'יופי! מתחילים מחדש' },
+  pickGenderFirst:{f:'בחרי בן או בת קודם',                m: 'בחר בן או בת קודם' },
+};
+
+const PRAISES_TBL = {
+  f: ['כל הכבוד {name}!','מעולה! אלופה!','יפה מאוד!','וואו, את אלופה!','יש! עוד אחת נכונה!','את לומדת ממש מהר!','פשוט מעולה!','אני גאה בך!','נהדר {name}!','איזה כיף, צדקת!'],
+  m: ['כל הכבוד {name}!','מעולה! אלוף!','יפה מאוד!','וואו, אתה אלוף!','יש! עוד אחת נכונה!','אתה לומד ממש מהר!','פשוט מעולה!','אני גאה בך!','נהדר {name}!','איזה כיף, צדקת!'],
+};
+
+function gname() { return (state.profile && state.profile.name) || 'ריף'; }
+function ggen()  { return (state.profile && state.profile.gender) || 'f'; }
+
+function gx(key) {
+  const obj = texts[key];
+  if (!obj) return key;
+  return (obj[ggen()] || obj.f).replace(/\{name\}/g, gname());
+}
+
+function gxArgs(key, args) {
+  const obj = texts[key];
+  if (!obj) return key;
+  let s = obj[ggen()] || obj.f;
+  s = s.replace(/\{name\}/g, gname());
+  if (args) for (const k in args) s = s.replace(new RegExp('\\{'+k+'\\}','g'), args[k]);
+  return s;
+}
+
+function gPraise() {
+  const arr = PRAISES_TBL[ggen()] || PRAISES_TBL.f;
+  return arr[Math.floor(Math.random() * arr.length)].replace(/\{name\}/g, gname());
+}
+
+function applyProfile() {
+  document.querySelectorAll('[data-text-key]').forEach(el => {
+    const k = el.dataset.textKey;
+    if (texts[k]) el.textContent = gx(k);
+  });
+  updateHelloLine();
+}
+
+function updateHelloLine() {
+  const line = document.getElementById('hello-line');
+  if (!line) return;
+  const text = 'שלום ' + gname() + '!';
+  line.innerHTML = '';
+  for (const ch of text) {
+    const span = document.createElement('span');
+    if (ch === ' ') { span.innerHTML = '&nbsp;'; }
+    else span.textContent = ch;
+    line.appendChild(span);
+  }
+}
 
 function loadState() {
   try {
@@ -1233,7 +1426,71 @@ function showScreen(id) {
 function goHome() {
   showScreen('screen-home');
   renderRafi(document.getElementById('home-rafi-wrap'), 'happy');
-  setTimeout(() => speak('שלום ריף! למה את רוצה לשחק היום?'), 300);
+  applyProfile();
+  setTimeout(() => speak(gx('greet')), 300);
+}
+
+function goWelcome() {
+  showScreen('screen-welcome');
+  renderRafi(document.getElementById('welcome-rafi-wrap'), 'happy');
+  const input = document.getElementById('welcome-name');
+  if (input) input.value = (state.profile && state.profile.name) || '';
+  pendingGender = (state.profile && state.profile.gender) || null;
+  document.getElementById('welcome-girl').classList.toggle('selected', pendingGender === 'f');
+  document.getElementById('welcome-boy').classList.toggle('selected', pendingGender === 'm');
+}
+
+let pendingGender = null;
+function pickGender(g) {
+  pendingGender = g;
+  document.getElementById('welcome-girl').classList.toggle('selected', g === 'f');
+  document.getElementById('welcome-boy').classList.toggle('selected', g === 'm');
+}
+
+function finishWelcome() {
+  const input = document.getElementById('welcome-name');
+  const name = (input.value || '').trim();
+  if (!pendingGender) { speak(gx('pickGenderFirst')); return; }
+  if (!name) {
+    input.focus();
+    input.style.borderColor = 'var(--pink-hot)';
+    return;
+  }
+  state.profile = { name, gender: pendingGender };
+  saveState();
+  applyProfile();
+  goHome();
+}
+
+function confirmReset() {
+  if (document.getElementById('reset-popup')) return;
+  const popup = document.createElement('div');
+  popup.id = 'reset-popup';
+  popup.className = 'sticker-popup';
+  popup.innerHTML = `
+    <div class="big-sticker" style="font-size:120px">🤔</div>
+    <div class="sticker-text">${gx('achResetConfirm')}</div>
+    <div class="reset-confirm-actions">
+      <button class="draw-btn clear" onclick="cancelReset()">${gx('resetNo')}</button>
+      <button class="draw-btn done" onclick="doReset()">${gx('resetYes')}</button>
+    </div>
+  `;
+  document.body.appendChild(popup);
+}
+function cancelReset() { document.getElementById('reset-popup')?.remove(); }
+function doReset() {
+  state.lettersLearned = {};
+  state.numbersLearned = {};
+  state.stars = 0;
+  state.stickers = [];
+  state.mastery = {};
+  state.unlockedLevels = { letters: 3, numbers: 3, math: 3 };
+  state.mathCorrect = 0;
+  saveState();
+  cancelReset();
+  renderAchievements();
+  speak(gx('resetDone'));
+  spawnConfetti();
 }
 
 function goLettersMenu() { showScreen('screen-letters-menu'); state.selectedLevel = 1; resetLevelButtons('letters-levels'); }
@@ -1439,7 +1696,7 @@ function renderQuestion() {
 
       const prompt = document.createElement('div');
       prompt.className = 'question-prompt';
-      prompt.textContent = 'איזו אות זאת? לחצי על הצליל הנכון 🔊';
+      prompt.textContent = gx('whichLetter');
       body.appendChild(prompt);
 
       const row = document.createElement('div');
@@ -1460,17 +1717,17 @@ function renderQuestion() {
     } else if (game.mode === 'find') {
       const prompt = document.createElement('div');
       prompt.className = 'question-prompt';
-      prompt.textContent = 'מצאי את האות שאני אומר 🔍';
+      prompt.textContent = gx('findLetterPrompt');
       body.appendChild(prompt);
 
       const speakBtn = document.createElement('button');
       speakBtn.className = 'sound-big';
       speakBtn.innerHTML = '🔊';
       speakBtn.style.width = '100px'; speakBtn.style.height = '100px'; speakBtn.style.fontSize = '44px';
-      speakBtn.onclick = () => speak('מצאי את האות ' + game.current.name);
+      speakBtn.onclick = () => speak(gx('findLetter') + ' ' + game.current.name);
       body.appendChild(speakBtn);
 
-      setTimeout(() => speak('מצאי לי את האות ' + game.current.name), 400);
+      setTimeout(() => speak(gx('findLetter') + ' ' + game.current.name), 400);
 
       const row = document.createElement('div');
       row.className = 'answers-row';
@@ -1515,7 +1772,7 @@ function renderQuestion() {
   } else if (game.type === 'math') {
     const prompt = document.createElement('div');
     prompt.className = 'question-prompt';
-    prompt.textContent = 'כמה זה? חשבי 🧮';
+    prompt.textContent = gx('mathPrompt');
     body.appendChild(prompt);
 
     const display = document.createElement('div');
@@ -1556,7 +1813,7 @@ function renderQuestion() {
     if (game.mode === 'count') {
       const prompt = document.createElement('div');
       prompt.className = 'question-prompt';
-      prompt.textContent = 'כמה יש פה? סִפְרִי 🌟';
+      prompt.textContent = gx('countPrompt');
       body.appendChild(prompt);
 
       const display = document.createElement('div');
@@ -1583,17 +1840,17 @@ function renderQuestion() {
     } else if (game.mode === 'find') {
       const prompt = document.createElement('div');
       prompt.className = 'question-prompt';
-      prompt.textContent = 'מצאי את המספר שאני אומר 🔍';
+      prompt.textContent = gx('findNumberPrompt');
       body.appendChild(prompt);
 
       const speakBtn = document.createElement('button');
       speakBtn.className = 'sound-big';
       speakBtn.innerHTML = '🔊';
       speakBtn.style.width = '100px'; speakBtn.style.height = '100px'; speakBtn.style.fontSize = '44px';
-      speakBtn.onclick = () => speak('מצאי את המספר ' + game.current.word);
+      speakBtn.onclick = () => speak(gx('findNumber') + ' ' + game.current.word);
       body.appendChild(speakBtn);
 
-      setTimeout(() => speak('מצאי לי את המספר ' + game.current.word), 400);
+      setTimeout(() => speak(gx('findNumber') + ' ' + game.current.word), 400);
 
       const row = document.createElement('div');
       row.className = 'answers-row';
@@ -1800,7 +2057,7 @@ function renderDrawMode() {
   const body = document.getElementById('game-body');
   body.innerHTML = '';
   const char = getDisplayChar(game.current);
-  const label = game.type === 'letters' ? 'ציירי את האות:' : 'ציירי את המספר:';
+  const label = game.type === 'letters' ? gx('drawAsk') : gx('drawAskNum');
 
   const target = document.createElement('div');
   target.className = 'draw-target';
@@ -1845,8 +2102,8 @@ function renderDrawMode() {
 
   setTimeout(() => {
     const phrase = game.type === 'letters'
-      ? 'ציירי את האות ' + game.current.name
-      : 'ציירי את המספר ' + game.current.word;
+      ? gxArgs('drawAskLetter', { n: game.current.name })
+      : gxArgs('drawAskNumber', { n: game.current.word });
     speak(phrase);
   }, 400);
 }
@@ -1888,7 +2145,7 @@ function onDrawCorrect() {
   buildProgressDots();
   saveState();
 
-  const praise = PRAISES[Math.floor(Math.random() * PRAISES.length)];
+  const praise = gPraise();
   setTimeout(() => speak(praise), 200);
 
   setTimeout(() => {
@@ -1904,11 +2161,11 @@ function onDrawWrong(res) {
   renderRafi(document.getElementById('game-rafi-wrap'), 'thinking');
   let msg;
   if (res.coverage < 0.25 && draw.userPoints.length < 30) {
-    msg = 'נסי לצייר על כל הנקודות הקטנות';
+    msg = gx('drawOnDots');
   } else if (res.accuracy < 0.45) {
-    msg = 'כמעט! ננסי שוב, יותר לאט';
+    msg = gx('tryAgainSlow');
   } else {
-    msg = 'כמעט! עוד קצת על הנקודות';
+    msg = gx('drawMoreDots');
   }
   speak(msg);
   clearDrawing();
@@ -1968,7 +2225,7 @@ function onCorrect(btn) {
   });
 
   // praise (only if first attempt)
-  const praise = PRAISES[Math.floor(Math.random() * PRAISES.length)];
+  const praise = gPraise();
   setTimeout(() => speak(praise), 200);
 
   setTimeout(() => {
@@ -2012,10 +2269,10 @@ function showLevelUpPopup() {
   const popup = document.createElement('div');
   popup.className = 'sticker-popup';
   let extra = '';
-  if (game.type === 'numbers' && game.level === 4) extra = '<br><span style="font-size:18px;opacity:.85">עכשיו נלמד מספרים גדולים — 11 עד 20!</span>';
+  if (game.type === 'numbers' && game.level === 4) extra = '<br><span style="font-size:18px;opacity:.85">' + gx('bigNumbersExtra') + '</span>';
   popup.innerHTML = `
     <div class="big-sticker">🏆</div>
-    <div class="sticker-text">כל הכבוד ריף!<br>עברת לרמה ${game.level}! 🎉${extra}</div>
+    <div class="sticker-text">${gxArgs('levelUpTitle', { lvl: game.level })}${extra}</div>
   `;
   popup.onclick = () => {
     popup.remove();
@@ -2025,7 +2282,7 @@ function showLevelUpPopup() {
   document.body.appendChild(popup);
   spawnConfetti();
   spawnConfetti();
-  speak('כל הכבוד ריף! עברת לרמה ' + game.level);
+  speak(gxArgs('levelUpVoice', { lvl: game.level }));
   setTimeout(() => { if (popup.parentElement) popup.click(); }, 4500);
 }
 
@@ -2037,7 +2294,7 @@ function onWrong(btn) {
   renderRafi(document.getElementById('game-rafi-wrap'), 'thinking');
 
   if (game.attempts === 1) {
-    speak('אופס! בואי ננסה שוב');
+    speak(gx('oops'));
     setTimeout(() => btn.classList.add('disabled'), 500);
   } else if (game.attempts === 2) {
     // Mark wrong buttons gray, show arrow on correct
@@ -2053,10 +2310,10 @@ function onWrong(btn) {
       correctBtn.appendChild(arrow);
     }
     let namePart;
-    if (game.type === 'letters') namePart = 'האות הזאת קוראים ' + game.current.name;
-    else if (game.type === 'numbers') namePart = 'המספר הזה הוא ' + game.current.word;
-    else namePart = 'התשובה היא ' + numberWord(game.current.result);
-    speak('לא נורא! ' + namePart);
+    if (game.type === 'letters') namePart = gx('notBadLetter') + game.current.name;
+    else if (game.type === 'numbers') namePart = gx('notBadNumber') + game.current.word;
+    else namePart = gx('notBadMath') + numberWord(game.current.result);
+    speak(namePart);
   } else {
     // 3rd attempt - reveal & move on
     game.locked = true;
@@ -2066,9 +2323,9 @@ function onWrong(btn) {
       correctBtn.classList.add('show-correct');
     }
     let phrase;
-    if (game.type === 'letters') phrase = 'זו האות ' + game.current.name + '. בואי נשמע איך היא נשמעת';
-    else if (game.type === 'numbers') phrase = 'זה המספר ' + game.current.word;
-    else phrase = 'התשובה היא ' + numberWord(game.current.result);
+    if (game.type === 'letters') phrase = gxArgs('thisLetterIs', { n: game.current.name });
+    else if (game.type === 'numbers') phrase = gxArgs('thisNumberIs', { n: game.current.word });
+    else phrase = gxArgs('thisMathIs', { n: numberWord(game.current.result) });
     speak(phrase);
     setTimeout(() => {
       if (game.type === 'letters') {
@@ -2140,7 +2397,7 @@ function grantSticker() {
   popup.className = 'sticker-popup';
   popup.innerHTML = `
     <div class="big-sticker">${sticker}</div>
-    <div class="sticker-text">קיבלת מדבקה חדשה! 🎉</div>
+    <div class="sticker-text">${gx('newSticker')}</div>
   `;
   popup.onclick = () => {
     popup.remove();
@@ -2150,7 +2407,7 @@ function grantSticker() {
   };
   document.body.appendChild(popup);
   spawnConfetti();
-  speak('וואו ריף! קיבלת מדבקה חדשה!');
+  speak(gx('newStickerVoice'));
   setTimeout(() => {
     if (popup.parentElement) popup.click();
   }, 3500);
@@ -2160,6 +2417,7 @@ function grantSticker() {
    ACHIEVEMENTS SCREEN
    ============================================================ */
 function renderAchievements() {
+  document.getElementById('ach-title').textContent = gx('achTitle');
   const scroll = document.getElementById('ach-scroll');
   const lettersCount = Object.keys(state.lettersLearned).filter(k => state.lettersLearned[k] > 0).length;
   const numbersCount = Object.keys(state.numbersLearned).filter(k => state.numbersLearned[k] > 0).length;
@@ -2169,29 +2427,35 @@ function renderAchievements() {
   scroll.innerHTML = `
     <div class="ach-section">
       <div class="ach-stars-big">⭐ ${state.stars} כוכבים</div>
-      <div class="ach-summary">את מכירה <b>${lettersCount}</b> אותיות, <b>${numbersCount}</b> מספרים${mathDone ? ' ופתרת <b>'+mathDone+'</b> תרגילים' : ''}! 💖</div>
+      <div class="ach-summary">${gx('achKnow')} <b>${lettersCount}</b> אותיות, <b>${numbersCount}</b> מספרים${mathDone ? ' ופתרת <b>'+mathDone+'</b> תרגילים' : ''}! 💖</div>
     </div>
     <div class="ach-section">
-      <h3>🔤 אותיות שלמדת</h3>
+      <h3>${gx('achLetters')}</h3>
       <div class="ach-grid" id="ach-letters"></div>
     </div>
     <div class="ach-section">
-      <h3>🔢 מספרים שלמדת (1 עד 10)</h3>
+      <h3>${gx('achNumbers')}</h3>
       <div class="ach-grid" id="ach-numbers"></div>
     </div>
     ${bigNumbersUnlocked ? `
     <div class="ach-section">
-      <h3>🏆 מספרים גדולים (11 עד 20)</h3>
+      <h3>${gx('achBigNumbers')}</h3>
       <div class="ach-grid" id="ach-numbers-big"></div>
     </div>` : ''}
     ${mathDone ? `
     <div class="ach-section">
-      <h3>🧮 תרגילי חשבון</h3>
+      <h3>${gx('achMath')}</h3>
       <div class="ach-summary" style="margin:0">פתרת <b>${mathDone}</b> תרגילים — איזה מוח חכם! ✨</div>
     </div>` : ''}
     <div class="ach-section">
-      <h3>🎁 המדבקות שלך (${state.stickers.length}/${STICKERS.length})</h3>
+      <h3>${gx('achStickers')} (${state.stickers.length}/${STICKERS.length})</h3>
       <div class="ach-grid" id="ach-stickers"></div>
+    </div>
+    <div class="ach-section" style="text-align:center;">
+      <button class="big-btn pink" onclick="confirmReset()" style="margin: 0 auto;">
+        <span style="font-size:28px">🔄</span>
+        <span>${gx('achReset')}</span>
+      </button>
     </div>
   `;
 
@@ -2236,7 +2500,15 @@ function renderAchievements() {
    ============================================================ */
 function init() {
   loadState();
-  renderRafi(document.getElementById('home-rafi-wrap'), 'happy');
+
+  // If no profile yet, show welcome screen first
+  if (!state.profile || !state.profile.name) {
+    showScreen('screen-welcome');
+    renderRafi(document.getElementById('welcome-rafi-wrap'), 'happy');
+  } else {
+    applyProfile();
+    renderRafi(document.getElementById('home-rafi-wrap'), 'happy');
+  }
 
   // First user interaction unlocks audio.
   // iOS Safari REQUIRES the first speechSynthesis.speak() call to happen
@@ -2248,7 +2520,8 @@ function init() {
     setupVoices();
     if (typeof speechSynthesis !== 'undefined') {
       try {
-        const greet = new SpeechSynthesisUtterance('שלום ריף! למה את רוצה לשחק היום?');
+        const greetText = (state.profile && state.profile.name) ? gx('greet') : 'שלום! איך קוראים לך?';
+        const greet = new SpeechSynthesisUtterance(greetText);
         greet.lang = 'he-IL';
         if (hebrewVoice) greet.voice = hebrewVoice;
         greet.rate = 0.9;
