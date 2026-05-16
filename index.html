@@ -825,13 +825,13 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
   <div class="screen-title" style="font-size:22px; margin-bottom:14px;">בחרי רמה:</div>
   <div class="level-row" id="letters-levels">
     <button class="level-btn selected" data-level="1" onclick="selectLevel(this,1)">
-      <span>רמה 1</span><span class="stars">⭐</span>
+      <span>קל</span><span class="stars">⭐</span>
     </button>
     <button class="level-btn" data-level="2" onclick="selectLevel(this,2)">
-      <span>רמה 2</span><span class="stars">⭐⭐</span>
+      <span>בינוני</span><span class="stars">⭐⭐</span>
     </button>
     <button class="level-btn" data-level="3" onclick="selectLevel(this,3)">
-      <span>רמה 3</span><span class="stars">⭐⭐⭐</span>
+      <span>קשה</span><span class="stars">⭐⭐⭐</span>
     </button>
   </div>
   <button class="corner-btn right" onclick="goHome()">🏠</button>
@@ -853,17 +853,21 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
       <div class="icon">🔊</div>
       <div class="label">איזה מספר שמעת?</div>
     </div>
+    <div class="menu-card" onclick="startGame('math','add',1)">
+      <div class="icon">🧮</div>
+      <div class="label">חיבור עד 20</div>
+    </div>
   </div>
   <div class="screen-title" style="font-size:22px; margin-bottom:14px;">בחרי רמה:</div>
   <div class="level-row" id="numbers-levels">
     <button class="level-btn selected" data-level="1" onclick="selectLevel(this,1)">
-      <span>1 עד 5</span><span class="stars">⭐</span>
+      <span>קל</span><span class="stars">⭐</span>
     </button>
     <button class="level-btn" data-level="2" onclick="selectLevel(this,2)">
-      <span>6 עד 10</span><span class="stars">⭐⭐</span>
+      <span>בינוני</span><span class="stars">⭐⭐</span>
     </button>
     <button class="level-btn" data-level="3" onclick="selectLevel(this,3)">
-      <span>1 עד 10</span><span class="stars">⭐⭐⭐</span>
+      <span>קשה</span><span class="stars">⭐⭐⭐</span>
     </button>
   </div>
   <button class="corner-btn right" onclick="goHome()">🏠</button>
@@ -943,6 +947,54 @@ const NUMBERS = [
   { value:10, name:'עֶשֶׂר',  word:'עשר',   level:2 },
 ];
 
+const NUMBERS_BIG_WORDS = {
+  11: 'אחת עשרה',  12: 'שתים עשרה', 13: 'שלוש עשרה', 14: 'ארבע עשרה',
+  15: 'חמש עשרה',   16: 'שש עשרה',   17: 'שבע עשרה',  18: 'שמונה עשרה',
+  19: 'תשע עשרה',   20: 'עשרים',
+};
+const NUMBERS_BIG = [];
+for (let i = 11; i <= 20; i++) {
+  NUMBERS_BIG.push({ value: i, name: NUMBERS_BIG_WORDS[i], word: NUMBERS_BIG_WORDS[i], level: 4 });
+}
+
+function numberWord(n) {
+  if (n >= 1 && n <= 10) {
+    const obj = NUMBERS.find(x => x.value === n);
+    return obj ? obj.word : String(n);
+  }
+  if (n >= 11 && n <= 20) return NUMBERS_BIG_WORDS[n];
+  return String(n);
+}
+
+function generateMathProblem(level) {
+  let resultMin, resultMax;
+  if (level === 1) { resultMin = 2; resultMax = 5; }
+  else if (level === 2) { resultMin = 6; resultMax = 10; }
+  else { resultMin = 11; resultMax = 20; }
+
+  const result = resultMin + Math.floor(Math.random() * (resultMax - resultMin + 1));
+  // Pick a between 1 and result-1 such that b = result-a is also valid (1..min(10, result-1))
+  const aMax = Math.min(result - 1, 10);
+  const a = 1 + Math.floor(Math.random() * aMax);
+  const b = result - a;
+  return { a, b, result, id: a + '+' + b };
+}
+
+function generateMathChoices(correct, level) {
+  const choices = [correct];
+  const pool = [];
+  for (let d = 1; d <= 4; d++) {
+    if (correct - d >= 1) pool.push(correct - d);
+    if (correct + d <= 20) pool.push(correct + d);
+  }
+  while (choices.length < 4 && pool.length) {
+    const idx = Math.floor(Math.random() * pool.length);
+    const v = pool.splice(idx, 1)[0];
+    if (!choices.includes(v)) choices.push(v);
+  }
+  return shuffle(choices);
+}
+
 const STICKERS = ['🦄','🦋','🌸','🐯','🌈','⭐','🎀','🐰','🐱','🐶','🐼','🐨','🦊','🦁','🐸','🐧','🦉','🐢','🐬','🐳','🦒','🦓','🌻','🌷','🌺','🌼','🌹','🍓','🍎','🍒','🍰','🧁','🍭','🍬','🎂','🎈','🎁','🎊','🎉','🏆','💖','💝','💎','👑','🌙','☀️','🌟','✨','💫','🎨'];
 
 const PRAISES = [
@@ -973,6 +1025,9 @@ const state = {
   stickers: [],         // emoji[]
   theme: 'garden',
   selectedLevel: 1,
+  mastery: {},          // {'letters_1': [chars...], 'numbers_3': [values...]}
+  unlockedLevels: { letters: 3, numbers: 3, math: 3 },
+  mathCorrect: 0,
 };
 
 function loadState() {
@@ -983,6 +1038,9 @@ function loadState() {
       Object.assign(state, data);
     }
   } catch (e) {}
+  if (!state.mastery) state.mastery = {};
+  if (!state.unlockedLevels) state.unlockedLevels = { letters: 3, numbers: 3, math: 3 };
+  if (typeof state.mathCorrect !== 'number') state.mathCorrect = 0;
   document.body.className = 'theme-' + state.theme;
 }
 
@@ -994,6 +1052,9 @@ function saveState() {
       stars: state.stars,
       stickers: state.stickers,
       theme: state.theme,
+      mastery: state.mastery,
+      unlockedLevels: state.unlockedLevels,
+      mathCorrect: state.mathCorrect,
     }));
   } catch (e) {}
 }
@@ -1092,8 +1153,29 @@ function goHome() {
 }
 
 function goLettersMenu() { showScreen('screen-letters-menu'); state.selectedLevel = 1; resetLevelButtons('letters-levels'); }
-function goNumbersMenu() { showScreen('screen-numbers-menu'); state.selectedLevel = 1; resetLevelButtons('numbers-levels'); }
+function goNumbersMenu() {
+  showScreen('screen-numbers-menu');
+  state.selectedLevel = 1;
+  resetLevelButtons('numbers-levels');
+  refreshNumbersLevel4();
+}
 function goAchievements() { showScreen('screen-achievements'); renderAchievements(); }
+
+function refreshNumbersLevel4() {
+  const container = document.getElementById('numbers-levels');
+  let l4 = container.querySelector('.level-btn[data-level="4"]');
+  const unlocked = (state.unlockedLevels && state.unlockedLevels.numbers >= 4);
+  if (unlocked && !l4) {
+    l4 = document.createElement('button');
+    l4.className = 'level-btn';
+    l4.dataset.level = '4';
+    l4.onclick = function() { selectLevel(this, 4); };
+    l4.innerHTML = '<span>אלופה</span><span class="stars">⭐⭐⭐⭐</span>';
+    container.appendChild(l4);
+  } else if (!unlocked && l4) {
+    l4.remove();
+  }
+}
 
 function resetLevelButtons(containerId) {
   document.querySelectorAll('#' + containerId + ' .level-btn').forEach(b => b.classList.remove('selected'));
@@ -1117,30 +1199,44 @@ function cycleTheme() {
    GAME ENGINE
    ============================================================ */
 const game = {
-  type: null,         // 'letters' | 'numbers'
-  mode: null,         // 'identify' | 'find' | 'match' | 'count'
+  type: null,         // 'letters' | 'numbers' | 'math'
+  mode: null,         // 'identify' | 'find' | 'match' | 'count' | 'add'
   level: 1,
-  pool: [],           // available items
-  current: null,      // current item
+  pool: [],           // available items (n/a for math)
+  current: null,      // current item / problem
   choices: [],        // shown answer items
   roundProgress: 0,   // 0..4 (5 questions per round)
   attempts: 0,        // for current question
   locked: false,      // input lock during feedback
+  perfectStreak: 0,   // first-try-correct in a row at current level
+  currentIsPerfect: true, // false once user makes a wrong attempt on current Q
+  lastItemId: null,   // avoid consecutive repeats
 };
+
+function rebuildPool() {
+  if (game.type === 'letters') {
+    game.pool = LETTERS.filter(l => l.level <= game.level);
+  } else if (game.type === 'numbers') {
+    if (game.level === 1) game.pool = NUMBERS.filter(n => n.value <= 5);
+    else if (game.level === 2) game.pool = NUMBERS.filter(n => n.value >= 6 && n.value <= 10);
+    else if (game.level === 3) game.pool = NUMBERS.slice();
+    else if (game.level === 4) game.pool = NUMBERS_BIG.slice();
+  } else {
+    game.pool = []; // math generated dynamically
+  }
+}
 
 function startGame(type, mode, _legacyLevel) {
   game.type = type;
   game.mode = mode;
   game.level = state.selectedLevel || 1;
+  // Clamp math to max level 3
+  if (type === 'math' && game.level > 3) game.level = 3;
   game.roundProgress = 0;
+  game.perfectStreak = 0;
+  game.lastItemId = null;
 
-  if (type === 'letters') {
-    game.pool = LETTERS.filter(l => l.level <= game.level);
-  } else {
-    if (game.level === 1) game.pool = NUMBERS.filter(n => n.value <= 5);
-    else if (game.level === 2) game.pool = NUMBERS.filter(n => n.value >= 6);
-    else game.pool = NUMBERS.slice();
-  }
+  rebuildPool();
 
   showScreen('screen-game');
   updateStarsDisplay();
@@ -1184,21 +1280,51 @@ function shuffle(arr) {
 function nextQuestion() {
   game.attempts = 0;
   game.locked = false;
-  game.current = game.pool[Math.floor(Math.random() * game.pool.length)];
+  game.currentIsPerfect = true;
 
-  const distractorCount = game.mode === 'identify' || game.mode === 'match' ? 2 : 3;
-  const distractors = pickN(game.pool, distractorCount, game.current);
-  game.choices = shuffle([game.current, ...distractors]);
+  if (game.type === 'math') {
+    let problem, guard = 0;
+    do {
+      problem = generateMathProblem(game.level);
+      guard++;
+    } while (game.lastItemId === problem.id && guard < 20);
+    game.current = problem;
+    game.lastItemId = problem.id;
+    game.choices = generateMathChoices(problem.result, game.level);
+  } else {
+    let cand, guard = 0;
+    do {
+      cand = game.pool[Math.floor(Math.random() * game.pool.length)];
+      guard++;
+    } while (game.lastItemId === getItemId(cand) && game.pool.length > 1 && guard < 20);
+    game.current = cand;
+    game.lastItemId = getItemId(cand);
+    const distractorCount = game.mode === 'identify' || game.mode === 'match' ? 2 : 3;
+    const distractors = pickN(game.pool, distractorCount, game.current);
+    game.choices = shuffle([game.current, ...distractors]);
+  }
 
   renderQuestion();
   renderRafi(document.getElementById('game-rafi-wrap'), 'idle');
 }
 
+function getItemId(item) {
+  if (!item) return null;
+  if (game.type === 'letters') return item.char;
+  if (game.type === 'numbers') return String(item.value);
+  if (game.type === 'math') return item.id;
+  return null;
+}
+
 function getDisplayChar(item) {
-  return game.type === 'letters' ? item.char : String(item.value);
+  if (game.type === 'letters') return item.char;
+  if (game.type === 'numbers') return String(item.value);
+  if (game.type === 'math') return String(item.result);
 }
 function getNameToSpeak(item) {
-  return game.type === 'letters' ? item.name : item.word;
+  if (game.type === 'letters') return item.name;
+  if (game.type === 'numbers') return item.word;
+  if (game.type === 'math') return numberWord(item.result);
 }
 
 function renderQuestion() {
@@ -1236,7 +1362,7 @@ function renderQuestion() {
     } else if (game.mode === 'find') {
       const prompt = document.createElement('div');
       prompt.className = 'question-prompt';
-      prompt.textContent = `מצאי לי את האות "${game.current.char}" 🔍`;
+      prompt.textContent = 'מצאי את האות שאני אומר 🔍';
       body.appendChild(prompt);
 
       const speakBtn = document.createElement('button');
@@ -1288,6 +1414,46 @@ function renderQuestion() {
       body.appendChild(row);
     }
 
+  } else if (game.type === 'math') {
+    const prompt = document.createElement('div');
+    prompt.className = 'question-prompt';
+    prompt.textContent = 'כמה זה? חשבי 🧮';
+    body.appendChild(prompt);
+
+    const display = document.createElement('div');
+    display.className = 'big-display';
+    display.innerHTML = `
+      <div class="display-number" style="direction:ltr; font-size:clamp(70px,13vw,110px); display:flex; align-items:center; gap:14px;">
+        <span>${game.current.a}</span>
+        <span style="-webkit-text-fill-color:#FF9F7A;color:#FF9F7A">+</span>
+        <span>${game.current.b}</span>
+        <span style="-webkit-text-fill-color:#B89CFF;color:#B89CFF">=</span>
+        <span style="-webkit-text-fill-color:#6B5B8E;color:#6B5B8E">?</span>
+      </div>`;
+    body.appendChild(display);
+
+    const speakBtn = document.createElement('button');
+    speakBtn.className = 'sound-big';
+    speakBtn.innerHTML = '🔊';
+    speakBtn.style.width = '80px'; speakBtn.style.height = '80px'; speakBtn.style.fontSize = '34px';
+    speakBtn.style.marginBottom = '18px';
+    const sayProblem = () => speak('כמה זה ' + numberWord(game.current.a) + ' ועוד ' + numberWord(game.current.b) + '?');
+    speakBtn.onclick = sayProblem;
+    body.appendChild(speakBtn);
+    setTimeout(sayProblem, 350);
+
+    const row = document.createElement('div');
+    row.className = 'answers-row';
+    game.choices.forEach(val => {
+      const b = document.createElement('button');
+      b.className = 'answer-btn';
+      b.textContent = val;
+      b.dataset.value = val;
+      b.onclick = () => handleAnswer(b, val === game.current.result);
+      row.appendChild(b);
+    });
+    body.appendChild(row);
+
   } else { // numbers
     if (game.mode === 'count') {
       const prompt = document.createElement('div');
@@ -1319,7 +1485,7 @@ function renderQuestion() {
     } else if (game.mode === 'find') {
       const prompt = document.createElement('div');
       prompt.className = 'question-prompt';
-      prompt.textContent = `מצאי לי את המספר ${game.current.value} 🔍`;
+      prompt.textContent = 'מצאי את המספר שאני אומר 🔍';
       body.appendChild(prompt);
 
       const speakBtn = document.createElement('button');
@@ -1394,12 +1560,27 @@ function onCorrect(btn) {
   spawnConfetti();
   renderRafi(document.getElementById('game-rafi-wrap'), 'cheering');
 
-  // mark as learned
+  // mark as learned + mastery
   if (game.type === 'letters') {
     state.lettersLearned[game.current.char] = (state.lettersLearned[game.current.char] || 0) + 1;
-  } else {
+    const key = 'letters_' + game.level;
+    state.mastery[key] = state.mastery[key] || [];
+    if (!state.mastery[key].includes(game.current.char)) state.mastery[key].push(game.current.char);
+  } else if (game.type === 'numbers') {
     state.numbersLearned[game.current.value] = (state.numbersLearned[game.current.value] || 0) + 1;
+    const key = 'numbers_' + game.level;
+    state.mastery[key] = state.mastery[key] || [];
+    const id = String(game.current.value);
+    if (!state.mastery[key].includes(id)) state.mastery[key].push(id);
+  } else if (game.type === 'math') {
+    state.mathCorrect = (state.mathCorrect || 0) + 1;
   }
+
+  // perfect streak tracking
+  if (game.currentIsPerfect) {
+    game.perfectStreak = (game.perfectStreak || 0) + 1;
+  }
+
   state.stars++;
   updateStarsDisplay();
   game.roundProgress++;
@@ -1416,6 +1597,7 @@ function onCorrect(btn) {
   setTimeout(() => speak(praise), 200);
 
   setTimeout(() => {
+    if (shouldPromote()) { promoteLevel(); return; }
     if (game.roundProgress >= 5) {
       grantSticker();
     } else {
@@ -1424,7 +1606,57 @@ function onCorrect(btn) {
   }, 2000);
 }
 
+function shouldPromote() {
+  if ((game.perfectStreak || 0) < 5) return false;
+  const max = getMaxLevel(game.type);
+  return game.level < max;
+}
+
+function getMaxLevel(type) {
+  if (type === 'letters') return 3;
+  if (type === 'numbers') return 4;
+  if (type === 'math') return 3;
+  return 3;
+}
+
+function promoteLevel() {
+  game.level++;
+  game.perfectStreak = 0;
+  game.roundProgress = 0;
+  state.selectedLevel = game.level;
+  if (!state.unlockedLevels) state.unlockedLevels = { letters: 3, numbers: 3, math: 3 };
+  if (game.level > (state.unlockedLevels[game.type] || 3)) {
+    state.unlockedLevels[game.type] = game.level;
+  }
+  saveState();
+  rebuildPool();
+  showLevelUpPopup();
+}
+
+function showLevelUpPopup() {
+  const popup = document.createElement('div');
+  popup.className = 'sticker-popup';
+  let extra = '';
+  if (game.type === 'numbers' && game.level === 4) extra = '<br><span style="font-size:18px;opacity:.85">עכשיו נלמד מספרים גדולים — 11 עד 20!</span>';
+  popup.innerHTML = `
+    <div class="big-sticker">🏆</div>
+    <div class="sticker-text">כל הכבוד ריף!<br>עברת לרמה ${game.level}! 🎉${extra}</div>
+  `;
+  popup.onclick = () => {
+    popup.remove();
+    buildProgressDots();
+    nextQuestion();
+  };
+  document.body.appendChild(popup);
+  spawnConfetti();
+  spawnConfetti();
+  speak('כל הכבוד ריף! עברת לרמה ' + game.level);
+  setTimeout(() => { if (popup.parentElement) popup.click(); }, 4500);
+}
+
 function onWrong(btn) {
+  game.currentIsPerfect = false;
+  game.perfectStreak = 0;
   btn.classList.add('wrong-shake');
   setTimeout(() => btn.classList.remove('wrong-shake'), 500);
   renderRafi(document.getElementById('game-rafi-wrap'), 'thinking');
@@ -1445,7 +1677,10 @@ function onWrong(btn) {
       correctBtn.style.position = 'relative';
       correctBtn.appendChild(arrow);
     }
-    const namePart = game.type === 'letters' ? 'האות הזאת קוראים ' + game.current.name : 'המספר הזה הוא ' + game.current.word;
+    let namePart;
+    if (game.type === 'letters') namePart = 'האות הזאת קוראים ' + game.current.name;
+    else if (game.type === 'numbers') namePart = 'המספר הזה הוא ' + game.current.word;
+    else namePart = 'התשובה היא ' + numberWord(game.current.result);
     speak('לא נורא! ' + namePart);
   } else {
     // 3rd attempt - reveal & move on
@@ -1455,14 +1690,15 @@ function onWrong(btn) {
       correctBtn.classList.remove('disabled');
       correctBtn.classList.add('show-correct');
     }
-    const nameStr = getNameToSpeak(game.current);
-    speak(game.type === 'letters'
-      ? 'זו האות ' + game.current.name + '. בואי נשמע איך היא נשמעת'
-      : 'זה המספר ' + game.current.word);
+    let phrase;
+    if (game.type === 'letters') phrase = 'זו האות ' + game.current.name + '. בואי נשמע איך היא נשמעת';
+    else if (game.type === 'numbers') phrase = 'זה המספר ' + game.current.word;
+    else phrase = 'התשובה היא ' + numberWord(game.current.result);
+    speak(phrase);
     setTimeout(() => {
       if (game.type === 'letters') {
         state.lettersLearned[game.current.char] = state.lettersLearned[game.current.char] || 0;
-      } else {
+      } else if (game.type === 'numbers') {
         state.numbersLearned[game.current.value] = state.numbersLearned[game.current.value] || 0;
       }
       game.roundProgress++;
@@ -1552,20 +1788,32 @@ function renderAchievements() {
   const scroll = document.getElementById('ach-scroll');
   const lettersCount = Object.keys(state.lettersLearned).filter(k => state.lettersLearned[k] > 0).length;
   const numbersCount = Object.keys(state.numbersLearned).filter(k => state.numbersLearned[k] > 0).length;
+  const mathDone = state.mathCorrect || 0;
+  const bigNumbersUnlocked = state.unlockedLevels && state.unlockedLevels.numbers >= 4;
 
   scroll.innerHTML = `
     <div class="ach-section">
       <div class="ach-stars-big">⭐ ${state.stars} כוכבים</div>
-      <div class="ach-summary">את כבר מכירה <b>${lettersCount}</b> אותיות ו-<b>${numbersCount}</b> מספרים! 💖</div>
+      <div class="ach-summary">את מכירה <b>${lettersCount}</b> אותיות, <b>${numbersCount}</b> מספרים${mathDone ? ' ופתרת <b>'+mathDone+'</b> תרגילים' : ''}! 💖</div>
     </div>
     <div class="ach-section">
       <h3>🔤 אותיות שלמדת</h3>
       <div class="ach-grid" id="ach-letters"></div>
     </div>
     <div class="ach-section">
-      <h3>🔢 מספרים שלמדת</h3>
+      <h3>🔢 מספרים שלמדת (1 עד 10)</h3>
       <div class="ach-grid" id="ach-numbers"></div>
     </div>
+    ${bigNumbersUnlocked ? `
+    <div class="ach-section">
+      <h3>🏆 מספרים גדולים (11 עד 20)</h3>
+      <div class="ach-grid" id="ach-numbers-big"></div>
+    </div>` : ''}
+    ${mathDone ? `
+    <div class="ach-section">
+      <h3>🧮 תרגילי חשבון</h3>
+      <div class="ach-summary" style="margin:0">פתרת <b>${mathDone}</b> תרגילים — איזה מוח חכם! ✨</div>
+    </div>` : ''}
     <div class="ach-section">
       <h3>🎁 המדבקות שלך (${state.stickers.length}/${STICKERS.length})</h3>
       <div class="ach-grid" id="ach-stickers"></div>
@@ -1587,6 +1835,16 @@ function renderAchievements() {
     c.textContent = n.value;
     ng.appendChild(c);
   });
+
+  if (bigNumbersUnlocked) {
+    const nbg = document.getElementById('ach-numbers-big');
+    NUMBERS_BIG.forEach(n => {
+      const c = document.createElement('div');
+      c.className = 'ach-cell' + (state.numbersLearned[n.value] > 0 ? ' learned' : '');
+      c.textContent = n.value;
+      nbg.appendChild(c);
+    });
+  }
 
   const sg = document.getElementById('ach-stickers');
   const owned = new Set(state.stickers);
