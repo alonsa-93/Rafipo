@@ -134,6 +134,8 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
 /* Menu screens stack top-down so corner buttons don't crowd content */
 #screen-letters-menu.active,
 #screen-numbers-menu.active,
+#screen-english-menu.active,
+#screen-shapes-menu.active,
 #screen-achievements.active,
 #screen-welcome.active {
   justify-content: flex-start;
@@ -1174,6 +1176,10 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
       <span style="font-size:36px">🎨</span>
       <span data-text-key="learnShapes">בואי נלמד צבעים וצורות!</span>
     </button>
+    <button class="big-btn pink" onclick="goEnglishMenu()">
+      <span style="font-size:36px">🇬🇧</span>
+      <span data-text-key="learnEnglish">בואי נלמד אנגלית!</span>
+    </button>
   </div>
 
   <button class="corner-btn left" onclick="goAchievements()" title="ההישגים שלי">🏆</button>
@@ -1268,6 +1274,46 @@ body.theme-space .hello-letters span { color: #FFFBF5; }
     </button>
     <button class="level-btn" data-level="3" onclick="selectLevel(this,3)">
       <span>קשה</span><span class="stars">⭐⭐⭐</span>
+    </button>
+  </div>
+  <button class="corner-btn right" onclick="goHome()">🏠</button>
+</div>
+
+<!-- ===== ENGLISH MENU ===== -->
+<div id="screen-english-menu" class="screen">
+  <div class="screen-title">🇬🇧 בואי נלמד אנגלית!</div>
+  <div class="menu-grid">
+    <div class="menu-card" onclick="startGame('english','find',1)">
+      <div class="icon">🔍</div>
+      <div class="label" data-text-key="findLetter">מצאי את האות</div>
+    </div>
+    <div class="menu-card" onclick="startGame('english','match',1)">
+      <div class="icon">🔊</div>
+      <div class="label">מה הצליל הזה?</div>
+    </div>
+    <div class="menu-card" onclick="startGame('english','draw',1)">
+      <div class="icon">✏️</div>
+      <div class="label" data-text-key="drawLetter">ציירי את האות</div>
+    </div>
+    <div class="menu-card" onclick="startGame('english','memory',1)">
+      <div class="icon">🃏</div>
+      <div class="label">משחק זיכרון</div>
+    </div>
+    <div class="menu-card" onclick="startGame('english','sequence',1)">
+      <div class="icon">🪜</div>
+      <div class="label">סדרי לפי הABC</div>
+    </div>
+  </div>
+  <div class="screen-title" style="font-size:22px; margin-bottom:14px;" data-text-key="pickLevel">בחרי רמה:</div>
+  <div class="level-row" id="english-levels">
+    <button class="level-btn selected" data-level="1" onclick="selectLevel(this,1)">
+      <span>A-J</span><span class="stars">⭐</span>
+    </button>
+    <button class="level-btn" data-level="2" onclick="selectLevel(this,2)">
+      <span>A-R</span><span class="stars">⭐⭐</span>
+    </button>
+    <button class="level-btn" data-level="3" onclick="selectLevel(this,3)">
+      <span>A-Z</span><span class="stars">⭐⭐⭐</span>
     </button>
   </div>
   <button class="corner-btn right" onclick="goHome()">🏠</button>
@@ -1466,6 +1512,38 @@ const SHAPES = [
   { name:'מעוין', word:'מעוין', svg:'<polygon points="50,8 92,50 50,92 8,50"/>',                                                                                     level:3 },
 ];
 
+const ENGLISH_LETTERS = [
+  // Level 1 — first 10
+  { char:'A', name:'ay',   word:'A', level:1 },
+  { char:'B', name:'bee',  word:'B', level:1 },
+  { char:'C', name:'see',  word:'C', level:1 },
+  { char:'D', name:'dee',  word:'D', level:1 },
+  { char:'E', name:'ee',   word:'E', level:1 },
+  { char:'F', name:'eff',  word:'F', level:1 },
+  { char:'G', name:'jee',  word:'G', level:1 },
+  { char:'H', name:'aitch',word:'H', level:1 },
+  { char:'I', name:'eye',  word:'I', level:1 },
+  { char:'J', name:'jay',  word:'J', level:1 },
+  // Level 2 — next 8
+  { char:'K', name:'kay',  word:'K', level:2 },
+  { char:'L', name:'el',   word:'L', level:2 },
+  { char:'M', name:'em',   word:'M', level:2 },
+  { char:'N', name:'en',   word:'N', level:2 },
+  { char:'O', name:'oh',   word:'O', level:2 },
+  { char:'P', name:'pee',  word:'P', level:2 },
+  { char:'Q', name:'cue',  word:'Q', level:2 },
+  { char:'R', name:'arr',  word:'R', level:2 },
+  // Level 3 — last 8
+  { char:'S', name:'ess',     word:'S', level:3 },
+  { char:'T', name:'tee',     word:'T', level:3 },
+  { char:'U', name:'you',     word:'U', level:3 },
+  { char:'V', name:'vee',     word:'V', level:3 },
+  { char:'W', name:'double u',word:'W', level:3 },
+  { char:'X', name:'ex',      word:'X', level:3 },
+  { char:'Y', name:'why',     word:'Y', level:3 },
+  { char:'Z', name:'zee',     word:'Z', level:3 },
+];
+
 const COLORED_OBJECTS = [
   { emoji:'🍎', color:'אדום' },{ emoji:'🍓', color:'אדום' },{ emoji:'🌹', color:'אדום' },{ emoji:'🍅', color:'אדום' },
   { emoji:'🍌', color:'צהוב' },{ emoji:'🌻', color:'צהוב' },{ emoji:'🌼', color:'צהוב' },{ emoji:'🧀', color:'צהוב' },
@@ -1491,9 +1569,10 @@ const state = {
   theme: 'garden',
   selectedLevel: 1,
   mastery: {},          // {'letters_1': [chars...], 'numbers_3': [values...]}
-  unlockedLevels: { letters: 3, numbers: 3, math: 3, shapes: 3 },
+  unlockedLevels: { letters: 3, numbers: 3, math: 3, shapes: 3, english: 3 },
   mathCorrect: 0,
   shapesCorrect: 0,
+  englishLearned: {},   // {char: count} for English letters
   profile: null,        // {name, gender:'f'|'m'} — set in welcome screen
 };
 
@@ -1503,6 +1582,7 @@ const texts = {
   learnLetters:  { f: 'בואי נלמד אותיות!',               m: 'בוא נלמד אותיות!' },
   learnNumbers:  { f: 'בואי נלמד מספרים!',               m: 'בוא נלמד מספרים!' },
   learnShapes:   { f: 'בואי נלמד צבעים וצורות!',         m: 'בוא נלמד צבעים וצורות!' },
+  learnEnglish:  { f: 'בואי נלמד אנגלית!',               m: 'בוא נלמד אנגלית!' },
   findLetter:    { f: 'מצאי את האות',                    m: 'מצא את האות' },
   findNumber:    { f: 'מצאי את המספר',                   m: 'מצא את המספר' },
   drawLetter:    { f: 'ציירי את האות',                   m: 'צייר את האות' },
@@ -1606,10 +1686,12 @@ function loadState() {
     }
   } catch (e) {}
   if (!state.mastery) state.mastery = {};
-  if (!state.unlockedLevels) state.unlockedLevels = { letters: 3, numbers: 3, math: 3, shapes: 3 };
+  if (!state.unlockedLevels) state.unlockedLevels = { letters: 3, numbers: 3, math: 3, shapes: 3, english: 3 };
   if (!state.unlockedLevels.shapes) state.unlockedLevels.shapes = 3;
+  if (!state.unlockedLevels.english) state.unlockedLevels.english = 3;
   if (typeof state.mathCorrect !== 'number') state.mathCorrect = 0;
   if (typeof state.shapesCorrect !== 'number') state.shapesCorrect = 0;
+  if (!state.englishLearned) state.englishLearned = {};
   document.body.className = 'theme-' + state.theme;
 }
 
@@ -1625,6 +1707,7 @@ function saveState() {
       unlockedLevels: state.unlockedLevels,
       mathCorrect: state.mathCorrect,
       shapesCorrect: state.shapesCorrect,
+      englishLearned: state.englishLearned,
       profile: state.profile,
     }));
   } catch (e) {}
@@ -1700,8 +1783,9 @@ function speak(text, opts = {}) {
   try {
     speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = 'he-IL';
-    if (hebrewVoice) u.voice = hebrewVoice;
+    u.lang = opts.lang || 'he-IL';
+    // Only force the Hebrew voice when we're speaking Hebrew.
+    if (u.lang === 'he-IL' && hebrewVoice) u.voice = hebrewVoice;
     u.rate = opts.rate || 0.9;
     u.pitch = opts.pitch || 1.15;
     u.volume = 1;
@@ -1778,9 +1862,10 @@ function doReset() {
   state.stars = 0;
   state.stickers = [];
   state.mastery = {};
-  state.unlockedLevels = { letters: 3, numbers: 3, math: 3, shapes: 3 };
+  state.unlockedLevels = { letters: 3, numbers: 3, math: 3, shapes: 3, english: 3 };
   state.mathCorrect = 0;
   state.shapesCorrect = 0;
+  state.englishLearned = {};
   saveState();
   cancelReset();
   renderAchievements();
@@ -1799,6 +1884,11 @@ function goShapesMenu() {
   showScreen('screen-shapes-menu');
   state.selectedLevel = 1;
   resetLevelButtons('shapes-levels');
+}
+function goEnglishMenu() {
+  showScreen('screen-english-menu');
+  state.selectedLevel = 1;
+  resetLevelButtons('english-levels');
 }
 function goAchievements() { showScreen('screen-achievements'); renderAchievements(); }
 
@@ -1858,6 +1948,8 @@ const game = {
 function rebuildPool() {
   if (game.type === 'letters') {
     game.pool = LETTERS.filter(l => l.level <= game.level);
+  } else if (game.type === 'english') {
+    game.pool = ENGLISH_LETTERS.filter(l => l.level <= game.level);
   } else if (game.type === 'numbers') {
     if (game.level === 1) game.pool = NUMBERS.filter(n => n.value <= 5);
     else if (game.level === 2) game.pool = NUMBERS.filter(n => n.value >= 6 && n.value <= 10);
@@ -1976,6 +2068,7 @@ function nextQuestion() {
 function getItemId(item) {
   if (!item) return null;
   if (game.type === 'letters') return item.char;
+  if (game.type === 'english') return item.char;
   if (game.type === 'numbers') return String(item.value);
   if (game.type === 'math') return item.id;
   if (game.type === 'shapes') return item.name;
@@ -1984,15 +2077,26 @@ function getItemId(item) {
 
 function getDisplayChar(item) {
   if (game.type === 'letters') return item.char;
+  if (game.type === 'english') return item.char;
   if (game.type === 'numbers') return String(item.value);
   if (game.type === 'math') return String(item.result);
   if (game.type === 'shapes') return item.name;
 }
 function getNameToSpeak(item) {
   if (game.type === 'letters') return item.name;
+  if (game.type === 'english') return item.name;
   if (game.type === 'numbers') return item.word;
   if (game.type === 'math') return numberWord(item.result);
   if (game.type === 'shapes') return item.word;
+}
+
+// English letters need en-US TTS so the browser uses an English voice
+function speakItem(item) {
+  if (game.type === 'english') {
+    speak(item.name, { lang: 'en-US', rate: 0.8 });
+  } else {
+    speak(getNameToSpeak(item));
+  }
 }
 
 function renderQuestion() {
@@ -2007,6 +2111,64 @@ function renderQuestion() {
     if (game.mode === 'color')      { renderColorMode();      return; }
     if (game.mode === 'shape')      { renderShapeMode();      return; }
     if (game.mode === 'match')      { renderMatchColorMode(); return; }
+  }
+
+  if (game.type === 'english') {
+    if (game.mode === 'find') {
+      const prompt = document.createElement('div');
+      prompt.className = 'question-prompt';
+      prompt.textContent = ggen() === 'm' ? 'מצא את האות שאני אומר 🔍' : 'מצאי את האות שאני אומר 🔍';
+      body.appendChild(prompt);
+
+      const sayIt = () => speak(game.current.name, { lang: 'en-US', rate: 0.8 });
+      const speakBtn = document.createElement('button');
+      speakBtn.className = 'sound-big';
+      speakBtn.innerHTML = '🔊';
+      speakBtn.style.width = '100px'; speakBtn.style.height = '100px'; speakBtn.style.fontSize = '44px';
+      speakBtn.onclick = sayIt;
+      body.appendChild(speakBtn);
+      setTimeout(sayIt, 400);
+
+      const row = document.createElement('div');
+      row.className = 'answers-row';
+      row.style.marginTop = '20px';
+      game.choices.forEach(item => {
+        const b = document.createElement('button');
+        b.className = 'answer-btn';
+        b.textContent = item.char;
+        b.dataset.value = item.char;
+        b.onclick = () => handleAnswer(b, item === game.current);
+        row.appendChild(b);
+      });
+      body.appendChild(row);
+      return;
+    } else if (game.mode === 'match') {
+      const prompt = document.createElement('div');
+      prompt.className = 'question-prompt';
+      prompt.textContent = 'איזו אות שמעת? 🎧';
+      body.appendChild(prompt);
+
+      const sayIt = () => speak(game.current.name, { lang: 'en-US', rate: 0.8 });
+      const speakBtn = document.createElement('button');
+      speakBtn.className = 'sound-big';
+      speakBtn.innerHTML = '🔊';
+      speakBtn.onclick = sayIt;
+      body.appendChild(speakBtn);
+      setTimeout(sayIt, 400);
+
+      const row = document.createElement('div');
+      row.className = 'answers-row';
+      game.choices.forEach(item => {
+        const b = document.createElement('button');
+        b.className = 'answer-btn';
+        b.textContent = item.char;
+        b.dataset.value = item.char;
+        b.onclick = () => handleAnswer(b, item === game.current);
+        row.appendChild(b);
+      });
+      body.appendChild(row);
+      return;
+    }
   }
 
   if (game.type === 'letters') {
@@ -2241,7 +2403,8 @@ function generateGuideDots(char, size) {
   const ctx = off.getContext('2d');
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, size, size);
-  const fontSize = Math.floor(size * 0.75);
+  // Smaller letter — child needs to be more precise. Was 0.75, now 0.6.
+  const fontSize = Math.floor(size * 0.6);
   ctx.font = `900 ${fontSize}px Rubik, 'Varela Round', sans-serif`;
   ctx.textBaseline = 'middle';
   ctx.textAlign = 'center';
@@ -2250,11 +2413,11 @@ function generateGuideDots(char, size) {
 
   const data = ctx.getImageData(0, 0, size, size).data;
   const dots = [];
-  const GRID = Math.max(10, Math.floor(size / 22));
+  // Tighter dot grid for more precise tracing.
+  const GRID = Math.max(11, Math.floor(size / 20));
   const HALF = GRID / 2;
   for (let y = HALF; y < size; y += GRID) {
     for (let x = HALF; x < size; x += GRID) {
-      // sample 3x3 around (x,y); if any pixel is text-dark, include
       let dark = false;
       for (let dy = -1; dy <= 1 && !dark; dy++) {
         for (let dx = -1; dx <= 1 && !dark; dx++) {
@@ -2343,7 +2506,8 @@ function endStroke(e) {
 }
 
 function markHits(x, y) {
-  const R = 18, R2 = R * R;
+  // Tighter hit radius — must trace closer to the dot
+  const R = 14, R2 = R * R;
   draw.dots.forEach(d => {
     if (d.hit) return;
     const dx = d.x - x, dy = d.y - y;
@@ -2352,11 +2516,11 @@ function markHits(x, y) {
 }
 
 function evaluateDrawing() {
-  if (draw.dots.length === 0) return { ok: false, coverage: 0, accuracy: 0 };
+  if (draw.dots.length === 0) return { ok: false, coverage: 0, accuracy: 0, scribble: false };
   const hitCount = draw.dots.filter(d => d.hit).length;
   const coverage = hitCount / draw.dots.length;
   let nearCount = 0;
-  const R = 22, R2 = R * R;
+  const R = 18, R2 = R * R; // was 22, tighter
   draw.userPoints.forEach(p => {
     for (const d of draw.dots) {
       const dx = d.x - p.x, dy = d.y - p.y;
@@ -2364,8 +2528,16 @@ function evaluateDrawing() {
     }
   });
   const accuracy = draw.userPoints.length ? nearCount / draw.userPoints.length : 0;
-  const ok = coverage >= 0.55 && accuracy >= 0.45 && draw.userPoints.length >= 30;
-  return { ok, coverage, accuracy };
+  // Scribble detection: if she drew WAY more than the shape needs,
+  // she's likely scribbling instead of tracing.
+  const expectedMaxPoints = draw.dots.length * 8;
+  const scribble = draw.userPoints.length > expectedMaxPoints;
+  // Stricter pass criteria — was 0.55 / 0.45 / 30. Now 0.62 / 0.58 / 40 + no-scribble.
+  const ok = !scribble
+          && coverage >= 0.62
+          && accuracy >= 0.58
+          && draw.userPoints.length >= 40;
+  return { ok, coverage, accuracy, scribble };
 }
 
 function setupDrawCanvas(canvas, dots) {
@@ -2385,7 +2557,7 @@ function renderDrawMode() {
   const body = document.getElementById('game-body');
   body.innerHTML = '';
   const char = getDisplayChar(game.current);
-  const label = game.type === 'letters' ? gx('drawAsk') : gx('drawAskNum');
+  const label = (game.type === 'letters' || game.type === 'english') ? gx('drawAsk') : gx('drawAskNum');
 
   const target = document.createElement('div');
   target.className = 'draw-target';
@@ -2429,10 +2601,16 @@ function renderDrawMode() {
   body.appendChild(actions);
 
   setTimeout(() => {
-    const phrase = game.type === 'letters'
-      ? gxArgs('drawAskLetter', { n: game.current.name })
-      : gxArgs('drawAskNumber', { n: game.current.word });
-    speak(phrase);
+    if (game.type === 'english') {
+      // Hebrew prompt + English letter name in English voice
+      speak(ggen()==='m' ? 'צייר את האות' : 'ציירי את האות');
+      setTimeout(() => speak(game.current.name, { lang: 'en-US', rate: 0.8 }), 700);
+    } else {
+      const phrase = game.type === 'letters'
+        ? gxArgs('drawAskLetter', { n: game.current.name })
+        : gxArgs('drawAskNumber', { n: game.current.word });
+      speak(phrase);
+    }
   }, 400);
 }
 
@@ -2454,6 +2632,11 @@ function onDrawCorrect() {
   if (game.type === 'letters') {
     state.lettersLearned[game.current.char] = (state.lettersLearned[game.current.char] || 0) + 1;
     const key = 'letters_' + game.level;
+    state.mastery[key] = state.mastery[key] || [];
+    if (!state.mastery[key].includes(game.current.char)) state.mastery[key].push(game.current.char);
+  } else if (game.type === 'english') {
+    state.englishLearned[game.current.char] = (state.englishLearned[game.current.char] || 0) + 1;
+    const key = 'english_' + game.level;
     state.mastery[key] = state.mastery[key] || [];
     if (!state.mastery[key].includes(game.current.char)) state.mastery[key].push(game.current.char);
   } else if (game.type === 'numbers') {
@@ -2488,9 +2671,12 @@ function onDrawWrong(res) {
   game.perfectStreak = 0;
   renderRafi(document.getElementById('game-rafi-wrap'), 'thinking');
   let msg;
-  if (res.coverage < 0.25 && draw.userPoints.length < 30) {
+  if (res.scribble) {
+    // She scribbled all over — needs to actually trace
+    msg = ggen() === 'm' ? 'נסה לעקוב אחרי הנקודות בעדינות' : 'נסי לעקוב אחרי הנקודות בעדינות';
+  } else if (res.coverage < 0.25 && draw.userPoints.length < 40) {
     msg = gx('drawOnDots');
-  } else if (res.accuracy < 0.45) {
+  } else if (res.accuracy < 0.58) {
     msg = gx('tryAgainSlow');
   } else {
     msg = gx('drawMoreDots');
@@ -2613,12 +2799,16 @@ function renderMemoryMode() {
 
   let pool;
   if (game.type === 'letters') pool = LETTERS.filter(l => l.level <= game.level).slice(0, pairs);
+  else if (game.type === 'english') pool = ENGLISH_LETTERS.filter(l => l.level <= game.level).slice(0, pairs);
   else pool = (game.pool && game.pool.length ? game.pool : NUMBERS).slice(0, pairs);
 
   const items = [];
   pool.forEach(p => {
-    items.push({ id: getItemId(p), display: game.type === 'letters' ? p.char : String(p.value), name: game.type === 'letters' ? p.name : p.word });
-    items.push({ id: getItemId(p), display: game.type === 'letters' ? p.char : String(p.value), name: game.type === 'letters' ? p.name : p.word });
+    const display = (game.type === 'letters' || game.type === 'english') ? p.char : String(p.value);
+    const name = (game.type === 'letters' || game.type === 'english') ? p.name : p.word;
+    const lang = game.type === 'english' ? 'en-US' : 'he-IL';
+    items.push({ id: getItemId(p), display, name, lang });
+    items.push({ id: getItemId(p), display, name, lang });
   });
   shuffle(items);
 
@@ -2657,7 +2847,8 @@ function memoryFlip(idx, el) {
   if (el.classList.contains('flipped') || el.classList.contains('matched')) return;
   el.classList.add('flipped');
   const card = memory.cards[idx];
-  speak(card.name);
+  if (card.lang === 'en-US') speak(card.name, { lang: 'en-US', rate: 0.8 });
+  else speak(card.name);
 
   if (!memory.firstPick) {
     memory.firstPick = { idx, el, card };
@@ -2722,12 +2913,14 @@ function renderSequenceMode() {
 
   let target;
   if (game.type === 'letters') {
-    // contiguous alphabet chunk
     const basePool = LETTERS.filter(l => l.level <= game.level && !l.name.includes('סוֹפִית'));
     const start = Math.floor(Math.random() * Math.max(1, basePool.length - size));
     target = basePool.slice(start, start + size);
+  } else if (game.type === 'english') {
+    const basePool = ENGLISH_LETTERS.filter(l => l.level <= game.level);
+    const start = Math.floor(Math.random() * Math.max(1, basePool.length - size));
+    target = basePool.slice(start, start + size);
   } else {
-    // contiguous numbers
     const pool = game.pool && game.pool.length ? game.pool.slice().sort((a,b) => a.value - b.value) : NUMBERS;
     const start = Math.floor(Math.random() * Math.max(1, pool.length - size));
     target = pool.slice(start, start + size);
@@ -2737,9 +2930,9 @@ function renderSequenceMode() {
 
   const prompt = document.createElement('div');
   prompt.className = 'seq-prompt';
-  prompt.textContent = game.type === 'letters'
-    ? (ggen()==='m' ? 'סדר את האותיות לפי האלף-בית 🪜' : 'סדרי את האותיות לפי האלף-בית 🪜')
-    : (ggen()==='m' ? 'סדר את המספרים מקטן לגדול 🪜' : 'סדרי את המספרים מקטן לגדול 🪜');
+  if (game.type === 'letters') prompt.textContent = ggen()==='m' ? 'סדר את האותיות לפי האלף-בית 🪜' : 'סדרי את האותיות לפי האלף-בית 🪜';
+  else if (game.type === 'english') prompt.textContent = ggen()==='m' ? 'סדר את האותיות לפי הABC 🪜' : 'סדרי את האותיות לפי הABC 🪜';
+  else prompt.textContent = ggen()==='m' ? 'סדר את המספרים מקטן לגדול 🪜' : 'סדרי את המספרים מקטן לגדול 🪜';
   body.appendChild(prompt);
 
   const slots = document.createElement('div');
@@ -2755,10 +2948,11 @@ function renderSequenceMode() {
   const shuffled = shuffle(target.slice());
   const items = document.createElement('div');
   items.className = 'seq-items';
+  const useChar = game.type === 'letters' || game.type === 'english';
   shuffled.forEach(it => {
     const b = document.createElement('button');
     b.className = 'seq-item';
-    b.textContent = game.type === 'letters' ? it.char : it.value;
+    b.textContent = useChar ? it.char : it.value;
     b.dataset.id = getItemId(it);
     b.onclick = () => seqPick(b, it);
     items.appendChild(b);
@@ -2774,8 +2968,10 @@ function seqPick(btn, item) {
     btn.classList.add('used');
     const slot = document.getElementById('seq-slot-' + seq.placedCount);
     slot.classList.add('filled');
-    slot.textContent = game.type === 'letters' ? item.char : item.value;
-    speak(game.type === 'letters' ? item.name : item.word);
+    const useChar = game.type === 'letters' || game.type === 'english';
+    slot.textContent = useChar ? item.char : item.value;
+    if (game.type === 'english') speak(item.name, { lang: 'en-US', rate: 0.8 });
+    else speak(useChar ? item.name : item.word);
     seq.placedCount++;
     if (seq.placedCount >= seq.target.length) {
       setTimeout(seqComplete, 700);
@@ -2831,6 +3027,11 @@ function onCorrect(btn) {
   if (game.type === 'letters') {
     state.lettersLearned[game.current.char] = (state.lettersLearned[game.current.char] || 0) + 1;
     const key = 'letters_' + game.level;
+    state.mastery[key] = state.mastery[key] || [];
+    if (!state.mastery[key].includes(game.current.char)) state.mastery[key].push(game.current.char);
+  } else if (game.type === 'english') {
+    state.englishLearned[game.current.char] = (state.englishLearned[game.current.char] || 0) + 1;
+    const key = 'english_' + game.level;
     state.mastery[key] = state.mastery[key] || [];
     if (!state.mastery[key].includes(game.current.char)) state.mastery[key].push(game.current.char);
   } else if (game.type === 'numbers') {
@@ -2889,6 +3090,7 @@ function getMaxLevel(type) {
   if (type === 'numbers') return 4;
   if (type === 'math') return 3;
   if (type === 'shapes') return 3;
+  if (type === 'english') return 3;
   return 3;
 }
 
@@ -2952,6 +3154,7 @@ function onWrong(btn) {
     }
     let namePart;
     if (game.type === 'letters') namePart = gx('notBadLetter') + game.current.name;
+    else if (game.type === 'english') namePart = gx('notBadLetter') + game.current.name;
     else if (game.type === 'numbers') namePart = gx('notBadNumber') + game.current.word;
     else namePart = gx('notBadMath') + numberWord(game.current.result);
     speak(namePart);
@@ -3064,6 +3267,7 @@ function renderAchievements() {
   const numbersCount = Object.keys(state.numbersLearned).filter(k => state.numbersLearned[k] > 0).length;
   const mathDone = state.mathCorrect || 0;
   const shapesDone = state.shapesCorrect || 0;
+  const englishCount = Object.keys(state.englishLearned || {}).filter(k => state.englishLearned[k] > 0).length;
   const bigNumbersUnlocked = state.unlockedLevels && state.unlockedLevels.numbers >= 4;
 
   scroll.innerHTML = `
@@ -3075,6 +3279,11 @@ function renderAchievements() {
       <h3>${gx('achLetters')}</h3>
       <div class="ach-grid" id="ach-letters"></div>
     </div>
+    ${englishCount ? `
+    <div class="ach-section">
+      <h3>🇬🇧 אותיות אנגלית שלמדת</h3>
+      <div class="ach-grid" id="ach-english"></div>
+    </div>` : ''}
     <div class="ach-section">
       <h3>${gx('achNumbers')}</h3>
       <div class="ach-grid" id="ach-numbers"></div>
@@ -3113,6 +3322,15 @@ function renderAchievements() {
     c.textContent = l.char;
     lg.appendChild(c);
   });
+  if (englishCount) {
+    const eg = document.getElementById('ach-english');
+    ENGLISH_LETTERS.forEach(l => {
+      const c = document.createElement('div');
+      c.className = 'ach-cell' + (state.englishLearned[l.char] > 0 ? ' learned' : '');
+      c.textContent = l.char;
+      eg.appendChild(c);
+    });
+  }
 
   const ng = document.getElementById('ach-numbers');
   NUMBERS.forEach(n => {
